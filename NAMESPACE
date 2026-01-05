@@ -1,0 +1,4 @@
+S3method(predict,tab_pfn)
+S3method(print,tab_pfn)
+export(tab_pfn_classification)
+export(tab_pfn_regression)
