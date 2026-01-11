@@ -61,10 +61,11 @@ check_tabpfn <- function(install = FALSE,
 #' Configure TabPFN Python Environment
 #'
 #' @description
-#' Sets up the Python environment for TabPFN usage.
+#' Sets up of Python environment for TabPFN usage.
 #'
 #' @param envname Name of the virtual environment
-#' @param force Logical. If TRUE, recreates the environment even if it exists
+#' @param force Logical. If TRUE, recreates environment even if it exists
+#' @param install_shap Logical. If TRUE, installs tabpfn-extensions for SHAP support
 #'
 #' @return NULL (invisible)
 #' @export
@@ -73,8 +74,11 @@ check_tabpfn <- function(install = FALSE,
 #' \dontrun{
 #' # Setup environment
 #' setup_tabpfn()
+#'
+#' # Setup with SHAP support
+#' setup_tabpfn(install_shap = TRUE)
 #' }
-setup_tabpfn <- function(envname = "r-tabpfn", force = FALSE) {
+setup_tabpfn <- function(envname = "r-tabpfn", force = FALSE, install_shap = FALSE) {
 
   existing_envs <- reticulate::virtualenv_list()
 
@@ -88,6 +92,24 @@ setup_tabpfn <- function(envname = "r-tabpfn", force = FALSE) {
 
   # Check and install TabPFN
   check_tabpfn(install = TRUE, envname = envname)
+
+  # Optionally install tabpfn-extensions for SHAP
+  if (install_shap) {
+    has_ext <- reticulate::py_module_available("tabpfn_extensions")
+
+    if (!has_ext) {
+      message("Installing tabpfn-extensions for SHAP support...")
+      tryCatch({
+        reticulate::py_install("tabpfn-extensions", envname = envname, pip = TRUE)
+        message("tabpfn-extensions installed successfully!")
+      }, error = function(e) {
+        warning("Failed to install tabpfn-extensions: ", e$message)
+        message("You can install it manually with: pip install tabpfn-extensions")
+      })
+    } else {
+      message("tabpfn-extensions already installed.")
+    }
+  }
 
   message("TabPFN environment ready!")
   invisible(NULL)

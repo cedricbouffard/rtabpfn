@@ -16,7 +16,9 @@ Depends:
 Imports:
     reticulate (>= 1.28),
     tibble (>= 3.0.0),
-    rlang (>= 1.0.0)
+    rlang (>= 1.0.0),
+    tidyr (>= 1.0.0),
+    dplyr (>= 1.0.0)
 Suggests:
     dplyr (>= 1.0.0),
     ggplot2 (>= 3.0.0),
