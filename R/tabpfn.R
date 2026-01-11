@@ -96,7 +96,7 @@ predict.tab_pfn <- function(object,
 
       # Convert to data frame with named columns
       pred_df <- as.data.frame(pred_matrix)
-      colnames(pred_df) <- paste0(".pred_q", sprintf("%05.1f", quantiles * 100))
+      colnames(pred_df) <- paste0(".pred_q", sprintf("%03d", floor(quantiles * 100)))
       return(tibble::as_tibble(pred_df))
 
     } else if (type == "conf_int") {

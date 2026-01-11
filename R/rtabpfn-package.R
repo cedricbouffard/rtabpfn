@@ -26,7 +26,7 @@ NULL
 #' check_tabpfn(install = TRUE)
 #' }
 check_tabpfn <- function(install = FALSE,
-                         envname = "r-tabpfn",
+                         envname = "tabpfn",
                          method = "auto") {
 
   has_tabpfn <- reticulate::py_module_available("tabpfn")
@@ -78,7 +78,7 @@ check_tabpfn <- function(install = FALSE,
 #' # Setup with SHAP support
 #' setup_tabpfn(install_shap = TRUE)
 #' }
-setup_tabpfn <- function(envname = "r-tabpfn", force = FALSE, install_shap = FALSE) {
+setup_tabpfn <- function(envname = "tabpfn", force = FALSE, install_shap = FALSE) {
 
   existing_envs <- reticulate::virtualenv_list()
 
