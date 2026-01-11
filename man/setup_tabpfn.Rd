@@ -4,22 +4,27 @@
 \alias{setup_tabpfn}
 \title{Configure TabPFN Python Environment}
 \usage{
-setup_tabpfn(envname = "r-tabpfn", force = FALSE)
+setup_tabpfn(envname = "r-tabpfn", force = FALSE, install_shap = FALSE)
 }
 \arguments{
 \item{envname}{Name of the virtual environment}
 
-\item{force}{Logical. If TRUE, recreates the environment even if it exists}
+\item{force}{Logical. If TRUE, recreates environment even if it exists}
+
+\item{install_shap}{Logical. If TRUE, installs tabpfn-extensions for SHAP support}
 }
 \value{
 NULL (invisible)
 }
 \description{
-Sets up the Python environment for TabPFN usage.
+Sets up of Python environment for TabPFN usage.
 }
 \examples{
 \dontrun{
 # Setup environment
 setup_tabpfn()
+
+# Setup with SHAP support
+setup_tabpfn(install_shap = TRUE)
 }
 }
