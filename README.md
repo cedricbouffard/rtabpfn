@@ -13,12 +13,12 @@ R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile p
 
 ## Setup
 
-First, setup the Python environment:
+First, setup of Python environment:
 
 ```r
 library(rtabpfn)
 
-# Setup Python environment and install TabPFN
+# Auto-detect TabPFN venv in C:/venvs/tabpfn/ or create new one
 setup_tabpfn()
 
 # For SHAP support, install tabpfn-extensions
@@ -28,16 +28,22 @@ setup_tabpfn(install_shap = TRUE)
 setup_tabpfn(install_unsupervised = TRUE)
 ```
 
-If you already have a Python virtual environment, configure reticulate to use it:
+If you have a Python virtual environment elsewhere, specify the path:
 
 ```r
+# Use existing virtual environment at custom location
+setup_tabpfn(python_path = "C:/path/to/your/venv/Scripts/python.exe")
+```
+
+If you already have a Python virtual environment, specify the path directly:
+
+```r
+# Use existing virtual environment
+setup_tabpfn(python_path = "C:/venvs/tabpfn/Scripts/python.exe")
+
+# Or use reticulate directly
 library(reticulate)
-
-# Set Python to your virtual environment
 use_python("C:/path/to/your/venv/Scripts/python.exe", required = TRUE)
-
-# Install tabpfn-extensions if needed
-py_install("tabpfn-extensions", pip = TRUE)
 ```
 
 Verify SHAP is available:

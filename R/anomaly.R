@@ -24,6 +24,8 @@ check_unsupervised_available <- function() {
     return(FALSE)
   }
 
+  rtabpfn:::ensure_python_env()
+
   has_ext <- reticulate::py_module_available("tabpfn_extensions")
   
   if (!has_ext) {
@@ -73,6 +75,8 @@ tab_pfn_unsupervised <- function(X, n_estimators = 4, device = "auto", categoric
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop("Package 'reticulate' is required but not installed.")
   }
+
+  rtabpfn:::ensure_python_env()
 
   if (!check_unsupervised_available()) {
     stop("Package 'tabpfn_extensions[unsupervised]' is required for anomaly detection.\n",
@@ -203,6 +207,8 @@ anomaly_scores <- function(object,
     stop("Package 'reticulate' is required but not installed.")
   }
 
+  rtabpfn:::ensure_python_env()
+
   if (!requireNamespace("tibble", quietly = TRUE)) {
     stop("Package 'tibble' is required but not installed.")
   }
@@ -302,6 +308,8 @@ predict.tab_pfn_unsupervised <- function(object,
                                            n_permutations = 10,
                                            threshold = NULL,
                                            ...) {
+
+  rtabpfn:::ensure_python_env()
 
   scores_df <- anomaly_scores(
     object = object,

@@ -24,6 +24,8 @@ check_shap_available <- function() {
     return(FALSE)
   }
 
+  rtabpfn:::ensure_python_env()
+
   reticulate::py_module_available("tabpfn_extensions")
 }
 
@@ -58,6 +60,8 @@ shap_values <- function(object,
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop("Package 'reticulate' is required but not installed.")
   }
+
+  rtabpfn:::ensure_python_env()
 
   if (!check_shap_available()) {
     stop("Package 'tabpfn_extensions' is required for SHAP values.\n",

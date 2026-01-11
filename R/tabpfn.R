@@ -20,6 +20,8 @@ predict.tab_pfn <- function(object,
                             level = 0.95,
                             ...) {
 
+  rtabpfn:::ensure_python_env()
+
   # Load required packages
   if (!requireNamespace("tibble", quietly = TRUE)) {
     stop("Package 'tibble' is required but not installed.")
@@ -213,6 +215,8 @@ predict.tab_pfn <- function(object,
 #' @export
 tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33, ...) {
 
+  rtabpfn:::ensure_python_env()
+
   # Load Python module
   tabpfn <- reticulate::import("tabpfn", convert = FALSE)
 
@@ -248,6 +252,8 @@ tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33, ...) {
 #' @return A tab_pfn model object with mode = "classification"
 #' @export
 tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33, ...) {
+
+  rtabpfn:::ensure_python_env()
 
   # Load Python module
   tabpfn <- reticulate::import("tabpfn", convert = FALSE)
