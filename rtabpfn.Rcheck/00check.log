@@ -1,0 +1,14 @@
+* using log directory 'C:/Users/cedbo/OneDrive/Documents/GitHub/rtabpfn/rtabpfn.Rcheck'
+* using R version 4.5.2 (2025-10-31 ucrt)
+* using platform: x86_64-w64-mingw32
+* R was compiled by
+    gcc.exe (GCC) 14.3.0
+    GNU Fortran (GCC) 14.3.0
+* running under: Windows 11 x64 (build 26200)
+* using session charset: UTF-8
+* checking for file 'rtabpfn/DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'rtabpfn' version '0.1.0'
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ...

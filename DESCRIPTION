@@ -5,8 +5,10 @@ Version: 0.1.0
 Authors@R: c(
     person("Cedric", "Bouffard", email = "info@cedricbouffard.com", role = c("aut", "cre"))
     )
-Description: An R interface to the TabPFN (Tabular Prior-Fitted Network) 
-    foundation model for tabular data. Built on top of reticulate to interface 
+Author: Cedric Bouffard [cre, aut]
+Maintainer: Cedric Bouffard <info@cedricbouffard.com>
+Description: An R interface to the TabPFN (Tabular Prior-Fitted Network)
+    foundation model for tabular data. Built on top of reticulate to interface
     with the Python TabPFN library.
 License: MIT + file LICENSE
 Encoding: UTF-8
