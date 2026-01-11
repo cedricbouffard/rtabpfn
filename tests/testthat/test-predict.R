@@ -111,3 +111,104 @@ test_that("explain_prediction works", {
   expect_true("base_value" %in% names(explanation))
   expect_true("prediction" %in% names(explanation))
 })
+
+test_that("unsupervised model can be created", {
+  skip_if_not_installed("reticulate")
+  skip_if(!reticulate::py_module_available("tabpfn"))
+  skip_if(!check_unsupervised_available())
+
+  X <- data.frame(x1 = 1:20, x2 = 21:40)
+
+  model <- tab_pfn_unsupervised(X, n_estimators = 2)
+
+  expect_s3_class(model, "tab_pfn_unsupervised")
+  expect_s3_class(model, "model_fit")
+  expect_equal(model$mode, "unsupervised")
+  expect_equal(model$n_estimators, 2)
+  expect_true(!is.null(model$predictor_names))
+})
+
+test_that("anomaly scores can be computed", {
+  skip_if_not_installed("reticulate")
+  skip_if(!reticulate::py_module_available("tabpfn"))
+  skip_if(!check_unsupervised_available())
+
+  X <- data.frame(x1 = 1:20, x2 = 21:40)
+
+  model <- tab_pfn_unsupervised(X, n_estimators = 2)
+
+  # Calculate anomaly scores
+  scores <- anomaly_scores(model, X, n_permutations = 5, verbose = FALSE)
+
+  expect_s3_class(scores, "tbl_df")
+  expect_equal(nrow(scores), nrow(X))
+  expect_true("observation" %in% names(scores))
+  expect_true("anomaly_score" %in% names(scores))
+  expect_true(is.numeric(scores$anomaly_score))
+})
+
+test_that("predict method works for unsupervised model", {
+  skip_if_not_installed("reticulate")
+  skip_if(!reticulate::py_module_available("tabpfn"))
+  skip_if(!check_unsupervised_available())
+
+  X <- data.frame(x1 = 1:20, x2 = 21:40)
+
+  model <- tab_pfn_unsupervised(X, n_estimators = 2)
+
+  # Predict without threshold
+  preds <- predict(model, X, n_permutations = 5)
+
+  expect_s3_class(preds, "tbl_df")
+  expect_true("anomaly_score" %in% names(preds))
+
+  # Predict with threshold
+  preds_with_threshold <- predict(model, X, n_permutations = 5, threshold = -100)
+
+  expect_s3_class(preds_with_threshold, "tbl_df")
+  expect_true("anomaly_score" %in% names(preds_with_threshold))
+  expect_true("is_anomaly" %in% names(preds_with_threshold))
+  expect_true(is.logical(preds_with_threshold$is_anomaly))
+})
+
+test_that("check_unsupervised_available works", {
+  skip_if_not_installed("reticulate")
+
+  has_unsup <- check_unsupervised_available()
+
+  expect_true(is.logical(has_unsup))
+
+  if (reticulate::py_module_available("tabpfn")) {
+    # If tabpfn is available, the function should not error
+    expect_type(has_unsup, "logical")
+  }
+})
+
+test_that("print method works for unsupervised model", {
+  skip_if_not_installed("reticulate")
+  skip_if(!reticulate::py_module_available("tabpfn"))
+  skip_if(!check_unsupervised_available())
+
+  X <- data.frame(x1 = 1:20, x2 = 21:40)
+
+  model <- tab_pfn_unsupervised(X, n_estimators = 2)
+
+  # Print method should return the model invisibly
+  result <- print(model)
+
+  expect_equal(result, model)
+})
+
+test_that("unsupervised model handles different data types", {
+  skip_if_not_installed("reticulate")
+  skip_if(!reticulate::py_module_available("tabpfn"))
+  skip_if(!check_unsupervised_available())
+
+  # Numeric data
+  X_numeric <- data.frame(x1 = 1:20, x2 = 21:40)
+  model_numeric <- tab_pfn_unsupervised(X_numeric, n_estimators = 2)
+  scores_numeric <- anomaly_scores(model_numeric, X_numeric, n_permutations = 2, verbose = FALSE)
+
+  expect_s3_class(scores_numeric, "tbl_df")
+  expect_equal(nrow(scores_numeric), nrow(X_numeric))
+})

@@ -66,6 +66,8 @@ check_tabpfn <- function(install = FALSE,
 #' @param envname Name of the virtual environment
 #' @param force Logical. If TRUE, recreates environment even if it exists
 #' @param install_shap Logical. If TRUE, installs tabpfn-extensions for SHAP support
+#' @param install_unsupervised Logical. If TRUE, installs tabpfn-extensions unsupervised module
+#' @param disable_analytics Logical. If TRUE, disables PostHog analytics (default: TRUE)
 #'
 #' @return NULL (invisible)
 #' @export
@@ -77,8 +79,16 @@ check_tabpfn <- function(install = FALSE,
 #'
 #' # Setup with SHAP support
 #' setup_tabpfn(install_shap = TRUE)
+#'
+#' # Setup with unsupervised anomaly detection
+#' setup_tabpfn(install_unsupervised = TRUE)
 #' }
-setup_tabpfn <- function(envname = "tabpfn", force = FALSE, install_shap = FALSE) {
+setup_tabpfn <- function(envname = "tabpfn", force = FALSE, install_shap = FALSE, install_unsupervised = FALSE, disable_analytics = TRUE) {
+
+  # Disable analytics by default to avoid PostHog warnings
+  if (disable_analytics) {
+    Sys.setenv("DO_NOT_TRACK" = "1")
+  }
 
   existing_envs <- reticulate::virtualenv_list()
 
@@ -108,6 +118,24 @@ setup_tabpfn <- function(envname = "tabpfn", force = FALSE, install_shap = FALSE
       })
     } else {
       message("tabpfn-extensions already installed.")
+    }
+  }
+
+  # Optionally install tabpfn-extensions unsupervised module
+  if (install_unsupervised) {
+    has_unsup <- reticulate::py_module_available("tabpfn_extensions.unsupervised")
+
+    if (!has_unsup) {
+      message("Installing tabpfn-extensions[unsupervised] for anomaly detection...")
+      tryCatch({
+        reticulate::py_install("tabpfn-extensions[unsupervised]", envname = envname, pip = TRUE)
+        message("tabpfn-extensions[unsupervised] installed successfully!")
+      }, error = function(e) {
+        warning("Failed to install tabpfn-extensions[unsupervised]: ", e$message)
+        message("You can install it manually with: pip install 'tabpfn-extensions[unsupervised]'")
+      })
+    } else {
+      message("tabpfn-extensions[unsupervised] already installed.")
     }
   }
 

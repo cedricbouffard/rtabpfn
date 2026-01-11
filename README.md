@@ -23,6 +23,9 @@ setup_tabpfn()
 
 # For SHAP support, install tabpfn-extensions
 setup_tabpfn(install_shap = TRUE)
+
+# For unsupervised anomaly detection, install tabpfn-extensions[unsupervised]
+setup_tabpfn(install_unsupervised = TRUE)
 ```
 
 If you already have a Python virtual environment, configure reticulate to use it:
@@ -41,6 +44,12 @@ Verify SHAP is available:
 
 ```r
 check_shap_available()  # Returns TRUE if available
+```
+
+Verify unsupervised extension is available:
+
+```r
+check_unsupervised_available()  # Returns TRUE if available
 ```
 
 ## Quick Start
@@ -105,11 +114,39 @@ explanation <- explain_prediction(model, X[1, , drop = FALSE])
 print(explanation)
 ```
 
+### Unsupervised Anomaly Detection
+
+```r
+library(rtabpfn)
+library(dplyr)
+
+# Prepare data (no labels needed for unsupervised detection)
+X <- mtcars[, c("cyl", "disp", "hp", "wt")]
+
+# Train unsupervised anomaly detection model
+model <- tab_pfn_unsupervised(X, n_estimators = 4)
+
+# Calculate anomaly scores
+scores <- anomaly_scores(model, X, n_permutations = 10)
+
+# Lower scores = more anomalous
+head(scores)
+
+# Identify most anomalous observations
+most_anomalous <- scores |>
+  arrange(anomaly_score) |>
+  head(5)
+
+# Using predict with threshold for binary classification
+predictions <- predict(model, X, threshold = -50)
+```
+
 ## Features
 
 - **Quantile Predictions**: Get uncertainty estimates via quantile regression (supports decimal quantiles)
 - **Prediction Intervals**: Calculate confidence intervals for predictions
 - **SHAP Explanations**: Compute SHAP values for model interpretability
+- **Unsupervised Anomaly Detection**: Detect outliers using joint probability estimation
 - **Multiple Output Types**: Support for mean, median, mode, and full distribution
 - **Classification Support**: Both class labels and probabilities
 - **Tidyverse Compatible**: Returns tibbles with standard column names
@@ -177,6 +214,25 @@ reticulate::py_install("tabpfn-extensions", pip = TRUE)
 # System command: C:/venvs/tabpfn/Scripts/python.exe -m pip install tabpfn-extensions
 ```
 
+### Unsupervised Extension Not Available
+
+If you get an error about `tabpfn_extensions[unsupervised]` not being available:
+
+```r
+# Check if unsupervised extension is available
+check_unsupervised_available()
+
+# If FALSE, install tabpfn-extensions[unsupervised]
+# Option 1: Using setup_tabpfn
+setup_tabpfn(install_unsupervised = TRUE)
+
+# Option 2: Manual installation via reticulate
+reticulate::py_install("tabpfn-extensions[unsupervised]", pip = TRUE)
+
+# Option 3: Direct pip installation in your virtual environment
+# System command: C:/venvs/tabpfn/Scripts/python.exe -m pip install 'tabpfn-extensions[unsupervised]'
+```
+
 ### Wrong Python Environment
 
 If reticulate is using the wrong Python environment:
@@ -193,6 +249,7 @@ use_python("C:/venvs/tabpfn/Scripts/python.exe", required = TRUE)
 # Verify modules are available
 py_module_available("tabpfn")           # Should be TRUE
 py_module_available("tabpfn_extensions") # Should be TRUE for SHAP
+py_module_available("tabpfn_extensions.unsupervised") # Should be TRUE for anomaly detection
 ```
 
 ### Different Output Types

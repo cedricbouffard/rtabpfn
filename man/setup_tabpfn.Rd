@@ -4,7 +4,13 @@
 \alias{setup_tabpfn}
 \title{Configure TabPFN Python Environment}
 \usage{
-setup_tabpfn(envname = "r-tabpfn", force = FALSE, install_shap = FALSE)
+setup_tabpfn(
+  envname = "tabpfn",
+  force = FALSE,
+  install_shap = FALSE,
+  install_unsupervised = FALSE,
+  disable_analytics = TRUE
+)
 }
 \arguments{
 \item{envname}{Name of the virtual environment}
@@ -12,6 +18,10 @@ setup_tabpfn(envname = "r-tabpfn", force = FALSE, install_shap = FALSE)
 \item{force}{Logical. If TRUE, recreates environment even if it exists}
 
 \item{install_shap}{Logical. If TRUE, installs tabpfn-extensions for SHAP support}
+
+\item{install_unsupervised}{Logical. If TRUE, installs tabpfn-extensions unsupervised module}
+
+\item{disable_analytics}{Logical. If TRUE, disables PostHog analytics (default: TRUE)}
 }
 \value{
 NULL (invisible)
@@ -26,5 +36,8 @@ setup_tabpfn()
 
 # Setup with SHAP support
 setup_tabpfn(install_shap = TRUE)
+
+# Setup with unsupervised anomaly detection
+setup_tabpfn(install_unsupervised = TRUE)
 }
 }
