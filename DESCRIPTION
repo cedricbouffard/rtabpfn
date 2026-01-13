@@ -30,5 +30,5 @@ Suggests:
     pkgdown
 RoxygenNote: 7.3.3
 VignetteBuilder: knitr
-URL: https://github.com/cedricbouffard/rtabpfn
+URL: https://cedricbouffard.github.io/rtabpfn/
 BugReports: https://github.com/cedricbouffard/rtabpfn/issues
