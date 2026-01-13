@@ -177,51 +177,6 @@ set_mode.tab_pfn <- function(object, mode, ...) {
   object
 }
 
-#' Get encoding for tab_pfn model
-#'
-#' @return A tibble with encoding information
-#' @keywords internal
-get_encoding.tab_pfn <- function() {
-  tibble::tibble(
-    model = c("tab_pfn", "tab_pfn"),
-    engine = c("tabpfn", "tabpfn"),
-    mode = c("classification", "regression"),
-    predictor_indicators = c("none", "none"),
-    compute_intercept = c(FALSE, FALSE),
-    remove_intercept = c(FALSE, FALSE),
-    allow_sparse_x = c(FALSE, FALSE)
-  )
-}
-
-#' Set the mode for TabPFN
-#'
-#' @param object A model specification
-#' @param mode A single character string for the prediction mode
-#' @param ... Not used
-#'
-#' @return An updated model specification
-#' @export
-set_mode.tab_pfn <- function(object, mode, ...) {
-  if (mode == "regression") {
-    object$mode <- "regression"
-  } else if (mode == "classification") {
-    object$mode <- "classification"
-  } else {
-    stop("`mode` should be either 'regression' or 'classification'", call. = FALSE)
-  }
-  
-  object$encoding <- list(
-    predictors = "numeric",
-    outcomes = if (object$mode == "classification") {
-      list(type = "factor", levels = NULL)
-    } else {
-      "numeric"
-    }
-  )
-  
-  object
-}
-
 #' Check that the required arguments are available for fitting
 #'
 #' @param object A model specification
