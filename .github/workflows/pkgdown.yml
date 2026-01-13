@@ -17,9 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy pkgdown
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-pkgdown@v2
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          http-user-agent: 'R/4.4.0 (x86_64-pc-linux-gnu) R (4.4.0 x86_64-pc-linux-gnu)'
 
       - name: Install dependencies
         run: |
