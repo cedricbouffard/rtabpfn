@@ -13,16 +13,6 @@ levels.
 First, ensure the Python environment is configured with
 tabpfn-extensions:
 
-``` r
-
-library(rtabpfn)
-
-# Check if SHAP is available
-if (!check_shap_available()) {
-  stop("Please install tabpfn-extensions: reticulate::py_install('tabpfn-extensions[all]', pip = TRUE)")
-}
-```
-
 Load required packages:
 
 ``` r

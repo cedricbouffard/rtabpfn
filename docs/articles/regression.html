@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">UNKNOWN TITLE</a></li>
+<li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with rtabpfn</a></li>
     <li><a class="dropdown-item" href="../articles/regression.html">Regression with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/classification.html">Classification with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/shap.html">SHAP Explanations with TabPFN</a></li>
@@ -90,14 +90,14 @@ small datasets.</p>
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
 <p>First, ensure the Python environment is configured:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">rtabpfn</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Found TabPFN virtual environment at: C:/venvs/tabpfn/Scripts/python.exe</span></span></code></pre>
-<pre><code><span><span class="co">## Using Python: C:/venvs/tabpfn/Scripts/python.exe</span></span></code></pre>
-<pre><code><span><span class="co">## TabPFN environment ready!</span></span></code></pre>
+<pre><code><span><span class="co">## Using virtual environment "tabpfn" ...</span></span></code></pre>
+<pre><code><span><span class="co">## Using virtual environment "tabpfn" ...</span></span></code></pre>
+<pre><code><span><span class="co">## PyTorch CUDA Available: TRUE </span></span>
+<span><span class="co">## CUDA Version: 12.8 </span></span>
+<span><span class="co">## Device Count: 1 </span></span>
+<span><span class="co">## Device: NVIDIA GeForce RTX 5070 Laptop GPU</span></span></code></pre>
 <p>Load required packages:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
@@ -108,7 +108,7 @@ small datasets.</p>
 <pre><code><span><span class="co">## The following objects are masked from 'package:base':</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##     intersect, setdiff, setequal, union</span></span></code></pre>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -116,7 +116,7 @@ small datasets.</p>
 </h2>
 <p>Let’s use the <code>mtcars</code> dataset to predict miles per gallon
 (mpg) based on engine characteristics:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
@@ -146,7 +146,7 @@ small datasets.</p>
 </h2>
 <p>TabPFN supports quantile predictions, providing uncertainty estimates
 for your predictions:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get quantile predictions</span></span>
 <span><span class="va">quantile_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span>, </span>
 <span>                          type <span class="op">=</span> <span class="st">"quantiles"</span>,</span>
@@ -169,7 +169,7 @@ for your predictions:</p>
 <div class="section level3">
 <h3 id="predictions-vs-actual">Predictions vs Actual<a class="anchor" aria-label="anchor" href="#predictions-vs-actual"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Combine predictions with actual values</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  actual <span class="op">=</span> <span class="va">y</span>,</span>
@@ -190,7 +190,7 @@ for your predictions:</p>
 <div class="section level3">
 <h3 id="uncertainty-intervals">Uncertainty Intervals<a class="anchor" aria-label="anchor" href="#uncertainty-intervals"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create dataframe with quantiles</span></span>
 <span><span class="va">df_quant</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  actual <span class="op">=</span> <span class="va">y</span>,</span>
@@ -219,7 +219,7 @@ for your predictions:</p>
 <div class="section level3">
 <h3 id="prediction-intervals">Prediction Intervals<a class="anchor" aria-label="anchor" href="#prediction-intervals"></a>
 </h3>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get 95% confidence intervals</span></span>
 <span><span class="va">conf_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"conf_int"</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
 <span></span>
@@ -246,7 +246,7 @@ for your predictions:</p>
 <div class="section level2">
 <h2 id="residual-analysis">Residual Analysis<a class="anchor" aria-label="anchor" href="#residual-analysis"></a>
 </h2>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate residuals</span></span>
 <span><span class="va">df_resid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  predicted <span class="op">=</span> <span class="va">preds</span><span class="op">$</span><span class="va">.pred</span>,</span>
@@ -263,7 +263,7 @@ for your predictions:</p>
 <span>       y <span class="op">=</span> <span class="st">"Residuals"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="regression_files/figure-html/plot-residuals-1.png" class="r-plt" width="576"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Histogram of residuals</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df_resid</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">residual</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>bins <span class="op">=</span> <span class="fl">15</span>, fill <span class="op">=</span> <span class="st">"steelblue"</span>, color <span class="op">=</span> <span class="st">"white"</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -277,7 +277,7 @@ for your predictions:</p>
 <div class="section level2">
 <h2 id="feature-relationships">Feature Relationships<a class="anchor" aria-label="anchor" href="#feature-relationships"></a>
 </h2>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Relationship between weight and MPG</span></span>
 <span><span class="va">df_wt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  wt <span class="op">=</span> <span class="va">mtcars</span><span class="op">$</span><span class="va">wt</span>,</span>
@@ -300,7 +300,7 @@ for your predictions:</p>
 <h2 id="using-with-tidymodels">Using with tidymodels<a class="anchor" aria-label="anchor" href="#using-with-tidymodels"></a>
 </h2>
 <p>TabPFN also integrates with the tidymodels ecosystem:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create model specification</span></span>

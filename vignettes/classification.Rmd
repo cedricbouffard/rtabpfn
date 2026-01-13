@@ -15,7 +15,7 @@ The `rtabpfn` package provides a powerful interface for classification tasks usi
 
 First, ensure the Python environment is configured:
 
-```{r setup, eval=TRUE}
+```{r setup, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
 rtabpfn:::setup_tabpfn()
 ```

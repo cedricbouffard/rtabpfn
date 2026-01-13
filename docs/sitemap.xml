@@ -11,10 +11,15 @@
 <url><loc>https://cedricbouffard.github.io/rtabpfn/index.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/anomaly.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/anomaly_scores.html</loc></url>
+<url><loc>https://cedricbouffard.github.io/rtabpfn/reference/check_gpu_available.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/check_shap_available.html</loc></url>
+<url><loc>https://cedricbouffard.github.io/rtabpfn/reference/check_tabpfn.html</loc></url>
+<url><loc>https://cedricbouffard.github.io/rtabpfn/reference/check_torch_gpu.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/check_unsupervised_available.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/explain_prediction.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/fit.tab_pfn.html</loc></url>
+<url><loc>https://cedricbouffard.github.io/rtabpfn/reference/fit_xy.tab_pfn.html</loc></url>
+<url><loc>https://cedricbouffard.github.io/rtabpfn/reference/get_encoding.tab_pfn.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/index.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/plot_shap_dependence.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/plot_shap_summary.html</loc></url>
@@ -27,7 +32,9 @@
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/print.tab_pfn_unsupervised.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/required_pkgs.tab_pfn.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/setup_tabpfn.html</loc></url>
+<url><loc>https://cedricbouffard.github.io/rtabpfn/reference/setup_torch.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/set_engine.tab_pfn.html</loc></url>
+<url><loc>https://cedricbouffard.github.io/rtabpfn/reference/set_mode.tab_pfn.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/shap.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/shap_values.html</loc></url>
 <url><loc>https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn.html</loc></url>

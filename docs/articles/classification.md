@@ -11,17 +11,14 @@ datasets, by leveraging prior knowledge from millions of datasets.
 
 First, ensure the Python environment is configured:
 
-``` r
+    ## Using virtual environment "tabpfn" ...
 
-library(rtabpfn)
-rtabpfn:::setup_tabpfn()
-```
+    ## Using virtual environment "tabpfn" ...
 
-    ## Found TabPFN virtual environment at: C:/venvs/tabpfn/Scripts/python.exe
-
-    ## Using Python: C:/venvs/tabpfn/Scripts/python.exe
-
-    ## TabPFN environment ready!
+    ## PyTorch CUDA Available: TRUE 
+    ## CUDA Version: 12.8 
+    ## Device Count: 1 
+    ## Device: NVIDIA GeForce RTX 5070 Laptop GPU
 
 Load required packages:
 

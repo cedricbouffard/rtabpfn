@@ -24,7 +24,7 @@ more anomalous data points.
 First, ensure the Python environment is configured with
 tabpfn-extensions:
 
-```{r setup, eval=TRUE}
+```{r setup, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
 
 # Check if unsupervised extension is available

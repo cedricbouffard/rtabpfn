@@ -1,11 +1,14 @@
 # TabPFN Model for tidymodels
 
 A TabPFN (Tabular Prior-Fitted Network) model that can be used with the
-tidymodels ecosystem (parsnip, workflows, tune, etc.)
+tidymodels ecosystem (parsnip, workflows, tune, etc.) Get encoding for
+tab_pfn model
 
 ## Usage
 
 ``` r
+get_encoding.tab_pfn()
+
 tab_pfn(
   mode = "unknown",
   engine = "tabpfn",
@@ -56,6 +59,8 @@ update(
   Additional engine-specific arguments
 
 ## Value
+
+A tibble with encoding information
 
 A model specification object
 

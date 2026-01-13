@@ -2,8 +2,8 @@
 
 ### Get Started
 
-- [UNKNOWN
-  TITLE](https://cedricbouffard.github.io/rtabpfn/articles/getting-started.md):
+- [Getting Started with
+  rtabpfn](https://cedricbouffard.github.io/rtabpfn/articles/getting-started.md):
 
 ### Model Tasks
 

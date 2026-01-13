@@ -410,8 +410,6 @@ Functions for unsupervised anomaly detection
   : Unsupervised Anomaly Detection for TabPFN
 - [`anomaly_scores()`](https://cedricbouffard.github.io/rtabpfn/reference/anomaly_scores.md)
   : Calculate Anomaly/Outlier Scores
-- [`predict(`*`<tab_pfn_unsupervised>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/predict.tab_pfn_unsupervised.md)
-  : Predict method for TabPFN Unsupervised models
 
 ## Setup and Configuration
 
@@ -419,6 +417,14 @@ Functions for setting up the Python environment
 
 - [`setup_tabpfn()`](https://cedricbouffard.github.io/rtabpfn/reference/setup_tabpfn.md)
   : Configure TabPFN Python Environment
+- [`check_tabpfn()`](https://cedricbouffard.github.io/rtabpfn/reference/check_tabpfn.md)
+  : Check TabPFN Installation
+- [`check_gpu_available()`](https://cedricbouffard.github.io/rtabpfn/reference/check_gpu_available.md)
+  : Check GPU Availability
+- [`check_torch_gpu()`](https://cedricbouffard.github.io/rtabpfn/reference/check_torch_gpu.md)
+  : Check PyTorch GPU Status
+- [`setup_torch()`](https://cedricbouffard.github.io/rtabpfn/reference/setup_torch.md)
+  : Setup PyTorch with GPU Support
 - [`check_shap_available()`](https://cedricbouffard.github.io/rtabpfn/reference/check_shap_available.md)
   : Check if SHAP is available
 - [`check_unsupervised_available()`](https://cedricbouffard.github.io/rtabpfn/reference/check_unsupervised_available.md)
@@ -443,18 +449,21 @@ Print methods for model objects
 
 parsnip model specification
 
-- [`tab_pfn()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn.md)
+- [`get_encoding.tab_pfn()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn.md)
+  [`tab_pfn()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn.md)
   [`update(`*`<tab_pfn>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn.md)
   : TabPFN Model for tidymodels
 - [`set_engine.tab_pfn()`](https://cedricbouffard.github.io/rtabpfn/reference/set_engine.tab_pfn.md)
   : Set the model engine for TabPFN
+- [`set_mode.tab_pfn()`](https://cedricbouffard.github.io/rtabpfn/reference/set_mode.tab_pfn.md)
+  : Set mode for TabPFN
 
 # Articles
 
 ### Get Started
 
-- [UNKNOWN
-  TITLE](https://cedricbouffard.github.io/rtabpfn/articles/getting-started.md):
+- [Getting Started with
+  rtabpfn](https://cedricbouffard.github.io/rtabpfn/articles/getting-started.md):
 
 ### Model Tasks
 

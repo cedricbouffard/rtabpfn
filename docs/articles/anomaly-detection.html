@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">UNKNOWN TITLE</a></li>
+<li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with rtabpfn</a></li>
     <li><a class="dropdown-item" href="../articles/regression.html">Regression with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/classification.html">Classification with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/shap.html">SHAP Explanations with TabPFN</a></li>
@@ -92,15 +92,8 @@ observation - lower scores indicate more anomalous data points.</p>
 </h2>
 <p>First, ensure the Python environment is configured with
 tabpfn-extensions:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">rtabpfn</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Check if unsupervised extension is available</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="../reference/check_unsupervised_available.html">check_unsupervised_available</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"Please install tabpfn-extensions: reticulate::py_install('tabpfn-extensions[unsupervised]', pip = TRUE)"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
 <p>Load required packages:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
@@ -111,7 +104,7 @@ tabpfn-extensions:</p>
 <pre><code><span><span class="co">## The following objects are masked from 'package:base':</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##     intersect, setdiff, setequal, union</span></span></code></pre>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -119,7 +112,7 @@ tabpfn-extensions:</p>
 </h2>
 <p>Let’s use the <code>mtcars</code> dataset to detect anomalous
 vehicles:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span></span>
@@ -136,29 +129,29 @@ vehicles:</p>
 <span><span class="co">## Fitting unsupervised model...</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Unsupervised model training complete!</span></span></code></pre>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate anomaly scores</span></span>
 <span><span class="va">scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/anomaly_scores.html">anomaly_scores</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span>, n_permutations <span class="op">=</span> <span class="fl">10</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Computing anomaly scores...</span></span>
 <span><span class="co">##   Input data dimensions: 32 x 7 </span></span>
 <span><span class="co">##   Computing with 10 permutations...</span></span>
-<span><span class="co">##   Done! Score range: 0.47135 - 101.1637</span></span></code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<span><span class="co">##   Done! Score range: 0.2061268 - 59.67083</span></span></code></pre>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">scores</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">##   observation anomaly_score</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> .obs_1              4.32 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> .obs_2              1.95 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> .obs_3              2.24 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> .obs_4              6.40 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> .obs_5              0.713</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> .obs_6              5.72</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> .obs_1              2.80 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> .obs_2              1.54 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> .obs_3              1.27 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> .obs_4              1.86 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> .obs_5              0.312</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> .obs_6              1.83</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="understanding-anomaly-scores">Understanding Anomaly Scores<a class="anchor" aria-label="anchor" href="#understanding-anomaly-scores"></a>
 </h2>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add scores to original data</span></span>
 <span><span class="va">mtcars_with_scores</span> <span class="op">&lt;-</span> <span class="va">mtcars</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -169,9 +162,9 @@ vehicles:</p>
 <span></span>
 <span><span class="co"># Summary statistics</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. </span></span>
-<span><span class="co">##   0.4713   1.1395   3.5916  12.5794   9.8895 101.1637</span></span></code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">##  0.2061  0.5412  1.7375  6.4449  5.2671 59.6708</span></span></code></pre>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find most anomalous vehicles</span></span>
 <span><span class="va">most_anomalous</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">anomaly_score</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -179,16 +172,16 @@ vehicles:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">most_anomalous</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"car_name"</span>, <span class="st">"anomaly_score"</span>, <span class="st">"mpg"</span>, <span class="st">"cyl"</span>, <span class="st">"hp"</span>, <span class="st">"wt"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                                car_name anomaly_score  mpg cyl  hp    wt</span></span>
-<span><span class="co">## AMC Javelin                 AMC Javelin     0.4713500 15.2   8 150 3.435</span></span>
-<span><span class="co">## Merc 450SL                   Merc 450SL     0.4782701 17.3   8 180 3.730</span></span>
-<span><span class="co">## Dodge Challenger       Dodge Challenger     0.6883186 15.5   8 150 3.520</span></span>
-<span><span class="co">## Hornet Sportabout     Hornet Sportabout     0.7130957 18.7   8 175 3.440</span></span>
-<span><span class="co">## Merc 450SLC                 Merc 450SLC     0.7781819 15.2   8 180 3.780</span></span>
-<span><span class="co">## Lincoln Continental Lincoln Continental     0.9288500 10.4   8 215 5.424</span></span>
-<span><span class="co">## Pontiac Firebird       Pontiac Firebird     0.9974388 19.2   8 175 3.845</span></span>
-<span><span class="co">## Cadillac Fleetwood   Cadillac Fleetwood     1.0830046 10.4   8 205 5.250</span></span>
-<span><span class="co">## Merc 450SE                   Merc 450SE     1.1583242 16.4   8 180 4.070</span></span>
-<span><span class="co">## Chrysler Imperial     Chrysler Imperial     1.4449891 14.7   8 230 5.345</span></span></code></pre>
+<span><span class="co">## AMC Javelin                 AMC Javelin     0.2061268 15.2   8 150 3.435</span></span>
+<span><span class="co">## Dodge Challenger       Dodge Challenger     0.2446634 15.5   8 150 3.520</span></span>
+<span><span class="co">## Merc 450SL                   Merc 450SL     0.2488258 17.3   8 180 3.730</span></span>
+<span><span class="co">## Hornet Sportabout     Hornet Sportabout     0.3119090 18.7   8 175 3.440</span></span>
+<span><span class="co">## Merc 450SLC                 Merc 450SLC     0.3575786 15.2   8 180 3.780</span></span>
+<span><span class="co">## Pontiac Firebird       Pontiac Firebird     0.3619120 19.2   8 175 3.845</span></span>
+<span><span class="co">## Lincoln Continental Lincoln Continental     0.4486681 10.4   8 215 5.424</span></span>
+<span><span class="co">## Cadillac Fleetwood   Cadillac Fleetwood     0.4926781 10.4   8 205 5.250</span></span>
+<span><span class="co">## Merc 450SE                   Merc 450SE     0.5573251 16.4   8 180 4.070</span></span>
+<span><span class="co">## Chrysler Imperial     Chrysler Imperial     0.6676782 14.7   8 230 5.345</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="visualizing-anomaly-scores">Visualizing Anomaly Scores<a class="anchor" aria-label="anchor" href="#visualizing-anomaly-scores"></a>
@@ -196,7 +189,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="anomaly-score-distribution">Anomaly Score Distribution<a class="anchor" aria-label="anchor" href="#anomaly-score-distribution"></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">anomaly_score</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></span><span class="op">(</span>bins <span class="op">=</span> <span class="fl">20</span>, fill <span class="op">=</span> <span class="st">"steelblue"</span>, color <span class="op">=</span> <span class="st">"white"</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html" class="external-link">median</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span><span class="op">)</span>, </span>
@@ -211,7 +204,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="anomaly-scores-by-feature">Anomaly Scores by Feature<a class="anchor" aria-label="anchor" href="#anomaly-scores-by-feature"></a>
 </h3>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Anomaly score vs MPG</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">mpg</span>, y <span class="op">=</span> <span class="va">anomaly_score</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"steelblue"</span>, size <span class="op">=</span> <span class="fl">3</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -222,7 +215,7 @@ vehicles:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## `geom_smooth()` using formula = 'y ~ x'</span></span></code></pre>
 <p><img src="anomaly-detection_files/figure-html/scores-by-feature-1.png" class="r-plt" width="700"></p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Anomaly score vs Horsepower</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">hp</span>, y <span class="op">=</span> <span class="va">anomaly_score</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"steelblue"</span>, size <span class="op">=</span> <span class="fl">3</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -237,7 +230,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="feature-space-with-anomaly-highlighting">Feature Space with Anomaly Highlighting<a class="anchor" aria-label="anchor" href="#feature-space-with-anomaly-highlighting"></a>
 </h3>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Identify top 10% most anomalous</span></span>
 <span><span class="va">threshold</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span>, <span class="fl">0.90</span><span class="op">)</span></span>
 <span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">is_anomaly</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span> <span class="op">&gt;=</span> <span class="va">threshold</span></span>
@@ -264,7 +257,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="multi-feature-comparison">Multi-Feature Comparison<a class="anchor" aria-label="anchor" href="#multi-feature-comparison"></a>
 </h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compare normal vs anomalous across features</span></span>
 <span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">is_anomaly_10pct</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span> <span class="op">&gt;=</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span>, <span class="fl">0.90</span><span class="op">)</span></span>
@@ -302,7 +295,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="pca-visualization">PCA Visualization<a class="anchor" aria-label="anchor" href="#pca-visualization"></a>
 </h3>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform PCA for 2D visualization</span></span>
 <span><span class="va">pca_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cyl"</span>, <span class="st">"disp"</span>, <span class="st">"hp"</span>, <span class="st">"wt"</span>, <span class="st">"qsec"</span><span class="op">)</span><span class="op">]</span>, </span>
 <span>                     scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -334,7 +327,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="finding-optimal-threshold">Finding Optimal Threshold<a class="anchor" aria-label="anchor" href="#finding-optimal-threshold"></a>
 </h3>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Examine different percentiles</span></span>
 <span><span class="va">thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.95</span>, <span class="fl">0.90</span>, <span class="fl">0.85</span>, <span class="fl">0.80</span>, <span class="fl">0.75</span><span class="op">)</span></span>
 <span></span>
@@ -346,12 +339,12 @@ vehicles:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">threshold_comparison</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##     percentile threshold_score n_anomalies</span></span>
-<span><span class="co">## 95%       0.95       43.776830           2</span></span>
-<span><span class="co">## 90%       0.90       36.039896           4</span></span>
-<span><span class="co">## 85%       0.85       30.271483           5</span></span>
-<span><span class="co">## 80%       0.80       25.518469           7</span></span>
-<span><span class="co">## 75%       0.75        9.889466           8</span></span></code></pre>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<span><span class="co">## 95%       0.95       22.226374           2</span></span>
+<span><span class="co">## 90%       0.90       20.398697           4</span></span>
+<span><span class="co">## 85%       0.85       14.158347           5</span></span>
+<span><span class="co">## 80%       0.80        8.926723           7</span></span>
+<span><span class="co">## 75%       0.75        5.267123           8</span></span></code></pre>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">threshold_comparison</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">percentile</span> <span class="op">*</span> <span class="fl">100</span>, y <span class="op">=</span> <span class="va">n_anomalies</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"steelblue"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
@@ -366,7 +359,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="anomaly-classification-with-threshold">Anomaly Classification with Threshold<a class="anchor" aria-label="anchor" href="#anomaly-classification-with-threshold"></a>
 </h3>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Classify as anomaly if score below 10th percentile</span></span>
 <span><span class="va">threshold_10</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span>, <span class="fl">0.90</span><span class="op">)</span></span>
 <span></span>
@@ -391,9 +384,9 @@ vehicles:</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
 <span><span class="co">##   classification     n mean_mpg mean_hp mean_wt</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> Anomaly            4     23.6    158.    2.59</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> Normal            28     19.6    145     3.31</span></span></code></pre>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> Anomaly            4     22.0    180.    2.75</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> Normal            28     19.8    142     3.28</span></span></code></pre>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Visualize</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mtcars_classified</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">classification</span>, y <span class="op">=</span> <span class="va">mpg</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">classification</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
@@ -412,7 +405,7 @@ vehicles:</p>
 <div class="section level3">
 <h3 id="detailed-inspection">Detailed Inspection<a class="anchor" aria-label="anchor" href="#detailed-inspection"></a>
 </h3>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get top 5 most anomalous cars</span></span>
 <span><span class="va">top_anomalies</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">anomaly_score</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -420,18 +413,18 @@ vehicles:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">top_anomalies</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"car_name"</span>, <span class="st">"anomaly_score"</span>, <span class="st">"mpg"</span>, <span class="st">"cyl"</span>, <span class="st">"disp"</span>, <span class="st">"hp"</span>, <span class="st">"wt"</span>, <span class="st">"qsec"</span>, <span class="st">"am"</span>, <span class="st">"gear"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                            car_name anomaly_score  mpg cyl  disp  hp    wt</span></span>
-<span><span class="co">## AMC Javelin             AMC Javelin     0.4713500 15.2   8 304.0 150 3.435</span></span>
-<span><span class="co">## Merc 450SL               Merc 450SL     0.4782701 17.3   8 275.8 180 3.730</span></span>
-<span><span class="co">## Dodge Challenger   Dodge Challenger     0.6883186 15.5   8 318.0 150 3.520</span></span>
-<span><span class="co">## Hornet Sportabout Hornet Sportabout     0.7130957 18.7   8 360.0 175 3.440</span></span>
-<span><span class="co">## Merc 450SLC             Merc 450SLC     0.7781819 15.2   8 275.8 180 3.780</span></span>
+<span><span class="co">## AMC Javelin             AMC Javelin     0.2061268 15.2   8 304.0 150 3.435</span></span>
+<span><span class="co">## Dodge Challenger   Dodge Challenger     0.2446634 15.5   8 318.0 150 3.520</span></span>
+<span><span class="co">## Merc 450SL               Merc 450SL     0.2488258 17.3   8 275.8 180 3.730</span></span>
+<span><span class="co">## Hornet Sportabout Hornet Sportabout     0.3119090 18.7   8 360.0 175 3.440</span></span>
+<span><span class="co">## Merc 450SLC             Merc 450SLC     0.3575786 15.2   8 275.8 180 3.780</span></span>
 <span><span class="co">##                    qsec am gear</span></span>
 <span><span class="co">## AMC Javelin       17.30  0    3</span></span>
-<span><span class="co">## Merc 450SL        17.60  0    3</span></span>
 <span><span class="co">## Dodge Challenger  16.87  0    3</span></span>
+<span><span class="co">## Merc 450SL        17.60  0    3</span></span>
 <span><span class="co">## Hornet Sportabout 17.02  0    3</span></span>
 <span><span class="co">## Merc 450SLC       18.00  0    3</span></span></code></pre>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compare each anomaly to median values</span></span>
 <span><span class="va">median_values</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
@@ -444,15 +437,15 @@ vehicles:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n=== Median Values (Normal) ===\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## === Median Values (Normal) ===</span></span></code></pre>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">median_values</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   median_mpg median_hp median_wt median_qsec</span></span>
 <span><span class="co">## 1       19.2       123     3.325       17.71</span></span></code></pre>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\n=== Anomaly Deviation from Median ===\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## === Anomaly Deviation from Median ===</span></span></code></pre>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">anomaly_deviation</span> <span class="op">&lt;-</span> <span class="va">top_anomalies</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">car_name</span>, <span class="va">mpg</span>, <span class="va">hp</span>, <span class="va">wt</span>, <span class="va">qsec</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -465,15 +458,15 @@ vehicles:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">anomaly_deviation</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"car_name"</span>, <span class="st">"mpg_diff"</span>, <span class="st">"hp_diff"</span>, <span class="st">"wt_diff"</span>, <span class="st">"qsec_diff"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                            car_name mpg_diff hp_diff wt_diff qsec_diff</span></span>
 <span><span class="co">## AMC Javelin             AMC Javelin     -4.0      27   0.110     -0.41</span></span>
-<span><span class="co">## Merc 450SL               Merc 450SL     -1.9      57   0.405     -0.11</span></span>
 <span><span class="co">## Dodge Challenger   Dodge Challenger     -3.7      27   0.195     -0.84</span></span>
+<span><span class="co">## Merc 450SL               Merc 450SL     -1.9      57   0.405     -0.11</span></span>
 <span><span class="co">## Hornet Sportabout Hornet Sportabout     -0.5      52   0.115     -0.69</span></span>
 <span><span class="co">## Merc 450SLC             Merc 450SLC     -4.0      57   0.455      0.29</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="parallel-coordinates-plot">Parallel Coordinates Plot<a class="anchor" aria-label="anchor" href="#parallel-coordinates-plot"></a>
 </h3>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Prepare data for parallel coordinates</span></span>
 <span><span class="va">parallel_df</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">observation</span>,<span class="va">is_anomaly_10pct</span>, <span class="va">mpg</span>, <span class="va">hp</span>, <span class="va">wt</span>, <span class="va">qsec</span>, <span class="va">gear</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -510,7 +503,7 @@ vehicles:</p>
 <div class="section level2">
 <h2 id="time-series-style-anomaly-detection">Time-Series Style Anomaly Detection<a class="anchor" aria-label="anchor" href="#time-series-style-anomaly-detection"></a>
 </h2>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Order by one feature (e.g., weight) to simulate time-series</span></span>
 <span><span class="va">mtcars_ordered</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">wt</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -532,7 +525,7 @@ vehicles:</p>
 <div class="section level2">
 <h2 id="using-with-prediction">Using with Prediction<a class="anchor" aria-label="anchor" href="#using-with-prediction"></a>
 </h2>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Combine with regression predictions</span></span>
 <span><span class="va">X_reg</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cyl"</span>, <span class="st">"disp"</span>, <span class="st">"hp"</span>, <span class="st">"wt"</span>, <span class="st">"qsec"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">y_reg</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">$</span><span class="va">mpg</span></span>
@@ -566,9 +559,9 @@ vehicles:</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
 <span><span class="co">##   is_anomaly_10pct     n mean_error median_error</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> FALSE                4      0.709        0.405</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> FALSE                4      0.751        0.489</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> TRUE                28      1.55         1.41</span></span></code></pre>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">combined_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">is_anomaly_10pct</span>, y <span class="op">=</span> <span class="va">prediction_error</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">is_anomaly_10pct</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>

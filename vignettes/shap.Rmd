@@ -15,7 +15,7 @@ SHAP (SHapley Additive exPlanations) is a game-theoretic approach to explain the
 
 First, ensure the Python environment is configured with tabpfn-extensions:
 
-```{r setup, eval=TRUE}
+```{r setup, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
 
 # Check if SHAP is available

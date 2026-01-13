@@ -14,16 +14,6 @@ more anomalous data points.
 First, ensure the Python environment is configured with
 tabpfn-extensions:
 
-``` r
-
-library(rtabpfn)
-
-# Check if unsupervised extension is available
-if (!check_unsupervised_available()) {
-  stop("Please install tabpfn-extensions: reticulate::py_install('tabpfn-extensions[unsupervised]', pip = TRUE)")
-}
-```
-
 Load required packages:
 
 ``` r
@@ -82,7 +72,7 @@ scores <- anomaly_scores(model, X, n_permutations = 10, verbose = TRUE)
     ## Computing anomaly scores...
     ##   Input data dimensions: 32 x 7 
     ##   Computing with 10 permutations...
-    ##   Done! Score range: 0.47135 - 101.1637
+    ##   Done! Score range: 0.2061268 - 59.67083
 
 ``` r
 
@@ -92,12 +82,12 @@ head(scores)
     ## # A tibble: 6 × 2
     ##   observation anomaly_score
     ##   <chr>               <dbl>
-    ## 1 .obs_1              4.32 
-    ## 2 .obs_2              1.95 
-    ## 3 .obs_3              2.24 
-    ## 4 .obs_4              6.40 
-    ## 5 .obs_5              0.713
-    ## 6 .obs_6              5.72
+    ## 1 .obs_1              2.80 
+    ## 2 .obs_2              1.54 
+    ## 3 .obs_3              1.27 
+    ## 4 .obs_4              1.86 
+    ## 5 .obs_5              0.312
+    ## 6 .obs_6              1.83
 
 ## Understanding Anomaly Scores
 
@@ -115,8 +105,8 @@ mtcars_with_scores <- mtcars %>%
 summary(mtcars_with_scores$anomaly_score)
 ```
 
-    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ##   0.4713   1.1395   3.5916  12.5794   9.8895 101.1637
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##  0.2061  0.5412  1.7375  6.4449  5.2671 59.6708
 
 ``` r
 
@@ -129,16 +119,16 @@ print(most_anomalous[, c("car_name", "anomaly_score", "mpg", "cyl", "hp", "wt")]
 ```
 
     ##                                car_name anomaly_score  mpg cyl  hp    wt
-    ## AMC Javelin                 AMC Javelin     0.4713500 15.2   8 150 3.435
-    ## Merc 450SL                   Merc 450SL     0.4782701 17.3   8 180 3.730
-    ## Dodge Challenger       Dodge Challenger     0.6883186 15.5   8 150 3.520
-    ## Hornet Sportabout     Hornet Sportabout     0.7130957 18.7   8 175 3.440
-    ## Merc 450SLC                 Merc 450SLC     0.7781819 15.2   8 180 3.780
-    ## Lincoln Continental Lincoln Continental     0.9288500 10.4   8 215 5.424
-    ## Pontiac Firebird       Pontiac Firebird     0.9974388 19.2   8 175 3.845
-    ## Cadillac Fleetwood   Cadillac Fleetwood     1.0830046 10.4   8 205 5.250
-    ## Merc 450SE                   Merc 450SE     1.1583242 16.4   8 180 4.070
-    ## Chrysler Imperial     Chrysler Imperial     1.4449891 14.7   8 230 5.345
+    ## AMC Javelin                 AMC Javelin     0.2061268 15.2   8 150 3.435
+    ## Dodge Challenger       Dodge Challenger     0.2446634 15.5   8 150 3.520
+    ## Merc 450SL                   Merc 450SL     0.2488258 17.3   8 180 3.730
+    ## Hornet Sportabout     Hornet Sportabout     0.3119090 18.7   8 175 3.440
+    ## Merc 450SLC                 Merc 450SLC     0.3575786 15.2   8 180 3.780
+    ## Pontiac Firebird       Pontiac Firebird     0.3619120 19.2   8 175 3.845
+    ## Lincoln Continental Lincoln Continental     0.4486681 10.4   8 215 5.424
+    ## Cadillac Fleetwood   Cadillac Fleetwood     0.4926781 10.4   8 205 5.250
+    ## Merc 450SE                   Merc 450SE     0.5573251 16.4   8 180 4.070
+    ## Chrysler Imperial     Chrysler Imperial     0.6676782 14.7   8 230 5.345
 
 ## Visualizing Anomaly Scores
 
@@ -309,11 +299,11 @@ print(threshold_comparison)
 ```
 
     ##     percentile threshold_score n_anomalies
-    ## 95%       0.95       43.776830           2
-    ## 90%       0.90       36.039896           4
-    ## 85%       0.85       30.271483           5
-    ## 80%       0.80       25.518469           7
-    ## 75%       0.75        9.889466           8
+    ## 95%       0.95       22.226374           2
+    ## 90%       0.90       20.398697           4
+    ## 85%       0.85       14.158347           5
+    ## 80%       0.80        8.926723           7
+    ## 75%       0.75        5.267123           8
 
 ``` r
 
@@ -360,8 +350,8 @@ print(summary_table)
     ## # A tibble: 2 × 5
     ##   classification     n mean_mpg mean_hp mean_wt
     ##   <chr>          <int>    <dbl>   <dbl>   <dbl>
-    ## 1 Anomaly            4     23.6    158.    2.59
-    ## 2 Normal            28     19.6    145     3.31
+    ## 1 Anomaly            4     22.0    180.    2.75
+    ## 2 Normal            28     19.8    142     3.28
 
 ``` r
 
@@ -393,15 +383,15 @@ print(top_anomalies[, c("car_name", "anomaly_score", "mpg", "cyl", "disp", "hp",
 ```
 
     ##                            car_name anomaly_score  mpg cyl  disp  hp    wt
-    ## AMC Javelin             AMC Javelin     0.4713500 15.2   8 304.0 150 3.435
-    ## Merc 450SL               Merc 450SL     0.4782701 17.3   8 275.8 180 3.730
-    ## Dodge Challenger   Dodge Challenger     0.6883186 15.5   8 318.0 150 3.520
-    ## Hornet Sportabout Hornet Sportabout     0.7130957 18.7   8 360.0 175 3.440
-    ## Merc 450SLC             Merc 450SLC     0.7781819 15.2   8 275.8 180 3.780
+    ## AMC Javelin             AMC Javelin     0.2061268 15.2   8 304.0 150 3.435
+    ## Dodge Challenger   Dodge Challenger     0.2446634 15.5   8 318.0 150 3.520
+    ## Merc 450SL               Merc 450SL     0.2488258 17.3   8 275.8 180 3.730
+    ## Hornet Sportabout Hornet Sportabout     0.3119090 18.7   8 360.0 175 3.440
+    ## Merc 450SLC             Merc 450SLC     0.3575786 15.2   8 275.8 180 3.780
     ##                    qsec am gear
     ## AMC Javelin       17.30  0    3
-    ## Merc 450SL        17.60  0    3
     ## Dodge Challenger  16.87  0    3
+    ## Merc 450SL        17.60  0    3
     ## Hornet Sportabout 17.02  0    3
     ## Merc 450SLC       18.00  0    3
 
@@ -454,8 +444,8 @@ print(anomaly_deviation[, c("car_name", "mpg_diff", "hp_diff", "wt_diff", "qsec_
 
     ##                            car_name mpg_diff hp_diff wt_diff qsec_diff
     ## AMC Javelin             AMC Javelin     -4.0      27   0.110     -0.41
-    ## Merc 450SL               Merc 450SL     -1.9      57   0.405     -0.11
     ## Dodge Challenger   Dodge Challenger     -3.7      27   0.195     -0.84
+    ## Merc 450SL               Merc 450SL     -1.9      57   0.405     -0.11
     ## Hornet Sportabout Hornet Sportabout     -0.5      52   0.115     -0.69
     ## Merc 450SLC             Merc 450SLC     -4.0      57   0.455      0.29
 
@@ -560,7 +550,7 @@ print(error_comparison)
     ## # A tibble: 2 × 4
     ##   is_anomaly_10pct     n mean_error median_error
     ##   <lgl>            <int>      <dbl>        <dbl>
-    ## 1 FALSE                4      0.709        0.405
+    ## 1 FALSE                4      0.751        0.489
     ## 2 TRUE                28      1.55         1.41
 
 ``` r

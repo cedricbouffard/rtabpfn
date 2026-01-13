@@ -1,36 +1,23 @@
-# 
-
-``` markdown
----
-title: "Getting Started with rtabpfn"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Getting Started with rtabpfn}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
+# Getting Started with rtabpfn
 
 ## Introduction
 
-The `rtabpfn` package provides an enhanced R interface to TabPFN, 
-a foundation model for tabular data. This vignette demonstrates the 
-key features, focusing on quantile predictions and uncertainty estimation.
+The `rtabpfn` package provides an enhanced R interface to TabPFN, a
+foundation model for tabular data. This vignette demonstrates the key
+features, focusing on quantile predictions and uncertainty estimation.
 
 ## Setup
 
 First, ensure the Python environment is configured:
 
+    ## Using virtual environment "tabpfn" ...
 
-``` r
-library(rtabpfn)
-setup_tabpfn()
-```
+    ## Using virtual environment "tabpfn" ...
 
-    ## Found TabPFN virtual environment at: C:/venvs/tabpfn/Scripts/python.exe
-
-    ## Using Python: C:/venvs/tabpfn/Scripts/python.exe
-
-    ## TabPFN environment ready!
+    ## PyTorch CUDA Available: TRUE 
+    ## CUDA Version: 12.8 
+    ## Device Count: 1 
+    ## Device: NVIDIA GeForce RTX 5070 Laptop GPU
 
 ## Regression with Quantiles
 

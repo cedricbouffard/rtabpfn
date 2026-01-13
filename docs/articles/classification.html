@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">UNKNOWN TITLE</a></li>
+<li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with rtabpfn</a></li>
     <li><a class="dropdown-item" href="../articles/regression.html">Regression with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/classification.html">Classification with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/shap.html">SHAP Explanations with TabPFN</a></li>
@@ -90,14 +90,14 @@ millions of datasets.</p>
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
 <p>First, ensure the Python environment is configured:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">rtabpfn</a></span><span class="op">)</span></span>
-<span><span class="fu">rtabpfn</span><span class="fu">:::</span><span class="fu"><a href="../reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Found TabPFN virtual environment at: C:/venvs/tabpfn/Scripts/python.exe</span></span></code></pre>
-<pre><code><span><span class="co">## Using Python: C:/venvs/tabpfn/Scripts/python.exe</span></span></code></pre>
-<pre><code><span><span class="co">## TabPFN environment ready!</span></span></code></pre>
+<pre><code><span><span class="co">## Using virtual environment "tabpfn" ...</span></span></code></pre>
+<pre><code><span><span class="co">## Using virtual environment "tabpfn" ...</span></span></code></pre>
+<pre><code><span><span class="co">## PyTorch CUDA Available: TRUE </span></span>
+<span><span class="co">## CUDA Version: 12.8 </span></span>
+<span><span class="co">## Device Count: 1 </span></span>
+<span><span class="co">## Device: NVIDIA GeForce RTX 5070 Laptop GPU</span></span></code></pre>
 <p>Load required packages:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
@@ -108,7 +108,7 @@ millions of datasets.</p>
 <pre><code><span><span class="co">## The following objects are masked from 'package:base':</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##     intersect, setdiff, setequal, union</span></span></code></pre>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -116,7 +116,7 @@ millions of datasets.</p>
 </h2>
 <p>Let’s use the classic <code>iris</code> dataset to classify flower
 species:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span></span>
 <span></span>
@@ -146,7 +146,7 @@ species:</p>
 </h2>
 <p>TabPFN can provide class probabilities, offering insight into
 prediction confidence:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get class probabilities</span></span>
 <span><span class="va">prob_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
 <span></span>
@@ -164,12 +164,12 @@ prediction confidence:</p>
 <div class="section level2">
 <h2 id="model-evaluation">Model Evaluation<a class="anchor" aria-label="anchor" href="#model-evaluation"></a>
 </h2>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate accuracy</span></span>
 <span><span class="va">accuracy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">class_preds</span><span class="op">$</span><span class="va">.pred_class</span> <span class="op">==</span> <span class="va">y</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Model Accuracy:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">accuracy</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Model Accuracy: 0.9867</span></span></code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Confusion matrix</span></span>
 <span><span class="va">conf_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span>Actual <span class="op">=</span> <span class="va">y</span>, Predicted <span class="op">=</span> <span class="va">class_preds</span><span class="op">$</span><span class="va">.pred_class</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">conf_matrix</span><span class="op">)</span></span></code></pre></div>
@@ -185,7 +185,7 @@ prediction confidence:</p>
 <div class="section level3">
 <h3 id="confusion-matrix-heatmap">Confusion Matrix Heatmap<a class="anchor" aria-label="anchor" href="#confusion-matrix-heatmap"></a>
 </h3>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create confusion matrix for plotting</span></span>
 <span><span class="va">conf_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">as.table</a></span><span class="op">(</span><span class="va">conf_matrix</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">conf_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Actual"</span>, <span class="st">"Predicted"</span>, <span class="st">"Count"</span><span class="op">)</span></span>
@@ -205,7 +205,7 @@ prediction confidence:</p>
 <div class="section level3">
 <h3 id="class-probabilities">Class Probabilities<a class="anchor" aria-label="anchor" href="#class-probabilities"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add actual class to probabilities</span></span>
 <span><span class="va">prob_df</span> <span class="op">&lt;-</span> <span class="va">prob_preds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>actual_class <span class="op">=</span> <span class="va">y</span><span class="op">)</span></span>
@@ -237,7 +237,7 @@ prediction confidence:</p>
 <div class="section level3">
 <h3 id="feature-space-visualization">Feature Space Visualization<a class="anchor" aria-label="anchor" href="#feature-space-visualization"></a>
 </h3>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot first two features with predictions</span></span>
 <span><span class="va">feature_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Sepal.Length <span class="op">=</span> <span class="va">iris</span><span class="op">$</span><span class="va">Sepal.Length</span>,</span>
@@ -264,7 +264,7 @@ prediction confidence:</p>
 <div class="section level3">
 <h3 id="confidence-scores">Confidence Scores<a class="anchor" aria-label="anchor" href="#confidence-scores"></a>
 </h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate confidence (max probability)</span></span>
 <span><span class="va">prob_df</span><span class="op">$</span><span class="va">max_prob</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">prob_df</span><span class="op">$</span><span class="va">.pred_setosa</span>, </span>
 <span>                         <span class="va">prob_df</span><span class="op">$</span><span class="va">.pred_versicolor</span>, </span>
@@ -288,14 +288,14 @@ prediction confidence:</p>
 <h2 id="multi-class-classification">Multi-Class Classification<a class="anchor" aria-label="anchor" href="#multi-class-classification"></a>
 </h2>
 <p>TabPFN handles multi-class problems natively:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Print class information</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Number of classes:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Number of classes: 3</span></span></code></pre>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Classes:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Classes: setosa, versicolor, virginica</span></span></code></pre>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check probabilities per class</span></span>
 <span><span class="va">class_stats</span> <span class="op">&lt;-</span> <span class="va">prob_preds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>actual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -316,7 +316,7 @@ prediction confidence:</p>
 <div class="section level3">
 <h3 id="probability-comparison-by-class">Probability Comparison by Class<a class="anchor" aria-label="anchor" href="#probability-comparison-by-class"></a>
 </h3>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Mean probabilities for each actual class</span></span>
 <span><span class="va">prob_mean</span> <span class="op">&lt;-</span> <span class="va">prob_preds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>actual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -351,7 +351,7 @@ prediction confidence:</p>
 <h2 id="using-with-tidymodels">Using with tidymodels<a class="anchor" aria-label="anchor" href="#using-with-tidymodels"></a>
 </h2>
 <p>TabPFN integrates seamlessly with the tidymodels ecosystem:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create model specification</span></span>
@@ -379,7 +379,7 @@ prediction confidence:</p>
 <div class="section level2">
 <h2 id="handling-binary-classification">Handling Binary Classification<a class="anchor" aria-label="anchor" href="#handling-binary-classification"></a>
 </h2>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create binary classification problem</span></span>
 <span><span class="va">iris_binary</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">!=</span> <span class="st">"setosa"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>

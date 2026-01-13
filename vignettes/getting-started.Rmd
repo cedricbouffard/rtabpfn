@@ -1,5 +1,4 @@
 
-```markdown
 ---
 title: "Getting Started with rtabpfn"
 output: rmarkdown::html_vignette
@@ -19,7 +18,7 @@ key features, focusing on quantile predictions and uncertainty estimation.
 
 First, ensure the Python environment is configured:
 
-```{r setup, eval=TRUE}
+```{r setup, eval=TRUE, message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
 setup_tabpfn()
 ```

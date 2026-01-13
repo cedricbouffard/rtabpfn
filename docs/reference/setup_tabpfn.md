@@ -1,7 +1,8 @@
 # Configure TabPFN Python Environment
 
 Sets up of Python environment for TabPFN usage. Automatically checks for
-TabPFN virtual environment in C:/venvs/tabpfn/ by default.
+TabPFN virtual environment in C:/venvs/tabpfn/ by default. Detects and
+configures GPU support.
 
 ## Usage
 
@@ -12,7 +13,10 @@ setup_tabpfn(
   force = FALSE,
   install_shap = FALSE,
   install_unsupervised = FALSE,
-  disable_analytics = TRUE
+  disable_analytics = TRUE,
+  setup_gpu = TRUE,
+  force_gpu = FALSE,
+  cuda_version = NULL
 )
 ```
 
@@ -42,6 +46,18 @@ setup_tabpfn(
 
   Logical. If TRUE, disables PostHog analytics (default: TRUE)
 
+- setup_gpu:
+
+  Logical. If TRUE, attempts to setup GPU support (default: TRUE)
+
+- force_gpu:
+
+  Logical. If TRUE, forces GPU installation even if not detected
+
+- cuda_version:
+
+  CUDA version to install (default: NULL for auto-detect)
+
 ## Value
 
 NULL (invisible)
@@ -64,5 +80,11 @@ setup_tabpfn(install_shap = TRUE)
 
 # Setup with unsupervised anomaly detection
 setup_tabpfn(install_unsupervised = TRUE)
+
+# Setup without GPU
+setup_tabpfn(setup_gpu = FALSE)
+
+# Force GPU installation
+setup_tabpfn(force_gpu = TRUE)
 } # }
 ```
