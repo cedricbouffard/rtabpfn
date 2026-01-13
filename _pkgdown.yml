@@ -1,0 +1,92 @@
+url: https://cedricbouffard.github.io/rtabpfn/
+
+template:
+  bootstrap: 5
+  bootswatch: cosmo
+
+home:
+  title: rtabpfn
+  description: An R interface to the TabPFN (Tabular Prior-Fitted Network) foundation model for tabular data
+  icon: fa-cogs
+  links:
+  - text: GitHub
+    href: https://github.com/cedricbouffard/rtabpfn
+  - text: TabPFN Paper
+    href: https://www.nature.com/articles/s41586-024-08328-6
+  - text: Prior Labs
+    href: https://priorlabs.ai/
+
+reference:
+- title: Model Training
+  desc: Functions to train TabPFN models
+  contents:
+  - tab_pfn_classification
+  - tab_pfn_regression
+  - tab_pfn_unsupervised
+
+- title: Prediction
+  desc: Functions for making predictions
+  contents:
+  - predict.tab_pfn
+  - predict.tab_pfn_unsupervised
+
+- title: Model Interpretability
+  desc: Functions for SHAP-based model explanations
+  contents:
+  - shap
+  - shap_values
+  - plot_shap_summary
+  - plot_shap_dependence
+  - explain_prediction
+  - print.shap_explanation
+
+- title: Anomaly Detection
+  desc: Functions for unsupervised anomaly detection
+  contents:
+  - anomaly
+  - anomaly_scores
+  - predict.tab_pfn_unsupervised
+
+- title: Setup and Configuration
+  desc: Functions for setting up the Python environment
+  contents:
+  - setup_tabpfn
+  - check_shap_available
+  - check_unsupervised_available
+  - validate_tabpfn_env
+
+- title: Print Methods
+  desc: Print methods for model objects
+  contents:
+  - print.tab_pfn
+  - print.tab_pfn_unsupervised
+  - print.tab_pfn_fit
+  - print.shap_explanation
+
+- title: tidymodels Integration
+  desc: parsnip model specification
+  contents:
+  - tab_pfn
+  - set_engine.tab_pfn
+
+articles:
+- title: Get Started
+  navbar: ~
+  contents:
+  - getting-started
+- title: Model Tasks
+  navbar: ~
+  contents:
+  - regression
+  - classification
+- title: Advanced Features
+  navbar: ~
+  contents:
+  - shap
+  - anomaly-detection
+
+news:
+  one_page: false
+  releases:
+  - text: "Version 0.1.0"
+    href: https://github.com/cedricbouffard/rtabpfn/releases/tag/v0.1.0

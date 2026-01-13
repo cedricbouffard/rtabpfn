@@ -1,0 +1,322 @@
+---
+title: "SHAP Explanations with TabPFN"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SHAP Explanations with TabPFN}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+SHAP (SHapley Additive exPlanations) is a game-theoretic approach to explain the output of machine learning models. The `rtabpfn` package integrates SHAP functionality through the `tabpfn-extensions` library, allowing you to interpret TabPFN predictions at both global and local levels.
+
+## Setup
+
+First, ensure the Python environment is configured with tabpfn-extensions:
+
+```{r setup, eval=TRUE}
+library(rtabpfn)
+
+# Check if SHAP is available
+if (!check_shap_available()) {
+  stop("Please install tabpfn-extensions: reticulate::py_install('tabpfn-extensions[all]', pip = TRUE)")
+}
+```
+
+Load required packages:
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Training a Model
+
+Let's train a regression model on the `mtcars` dataset and compute SHAP values:
+
+```{r train-model, eval=TRUE, message=FALSE, warning=FALSE}
+# Load data
+data(mtcars)
+
+# Prepare predictors and response
+X <- mtcars[, c("cyl", "disp", "hp", "wt", "qsec")]
+y <- mtcars$mpg
+
+# Train model
+model <- tab_pfn_regression(X, y, device = "auto")
+
+# Make predictions for comparison
+preds <- predict(model, X, type = "numeric")
+```
+
+## Computing SHAP Values
+
+Compute SHAP values for all observations:
+
+```{r shap-values, eval=TRUE, message=FALSE, warning=FALSE}
+# Calculate SHAP values
+shap_vals <- shap_values(model, X, verbose = TRUE)
+
+head(shap_vals)
+```
+
+## Global Feature Importance
+
+### Feature Importance Plot
+
+```{r plot-shap-summary, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+# Plot SHAP summary
+p1 <- plot_shap_summary(shap_vals, top_n = 5)
+print(p1)
+```
+
+### Manual Feature Importance
+
+```{r manual-importance, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+# Calculate mean absolute SHAP values
+feature_cols <- setdiff(names(shap_vals), c("observation", ".base_value"))
+
+importance_df <- shap_vals %>%
+  pivot_longer(cols = all_of(feature_cols),
+               names_to = "feature",
+               values_to = "shap_value") %>%
+  group_by(feature) %>%
+  summarise(
+    mean_abs_shap = mean(abs(shap_value)),
+    mean_shap = mean(shap_value),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(mean_abs_shap))
+
+print(importance_df)
+
+# Plot
+ggplot(importance_df, aes(x = reorder(feature, mean_abs_shap), y = mean_abs_shap)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "SHAP Feature Importance",
+       subtitle = "Mean absolute SHAP value across all observations",
+       x = "Feature",
+       y = "Mean |SHAP Value|") +
+  theme_minimal()
+```
+
+## Local Explanations
+
+### Explaining Individual Predictions
+
+```{r individual-prediction, eval=TRUE, message=FALSE, warning=FALSE}
+# Explain first observation
+explanation <- explain_prediction(model, X[1, , drop = FALSE])
+
+print(explanation)
+```
+
+### SHAP Dependence Plots
+
+```{r dependence-plot, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# SHAP dependence for 'wt' (weight)
+p2 <- plot_shap_dependence(shap_vals, X, feature = "wt")
+print(p2)
+```
+
+```{r dependence-plot-2, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# SHAP dependence with color feature
+p3 <- plot_shap_dependence(shap_vals, X, feature = "hp", color_feature = "wt")
+print(p3)
+```
+
+### Manual Dependence Plot
+
+```{r manual-dependence, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# Manual dependence plot for 'hp'
+dep_df <- data.frame(
+  feature_value = X$hp,
+  shap_value = shap_vals$hp,
+  color_feature = X$wt
+)
+
+ggplot(dep_df, aes(x = feature_value, y = shap_value)) +
+  geom_point(aes(color = color_feature), alpha = 0.6) +
+  geom_smooth(method = "loess", se = TRUE, color = "darkred", linetype = "dashed") +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red",
+                        midpoint = median(dep_df$color_feature)) +
+  labs(title = "SHAP Dependence Plot: Horsepower",
+       subtitle = "Color represents vehicle weight",
+       x = "Horsepower",
+       y = "SHAP value for hp",
+       color = "Weight") +
+  theme_minimal()
+```
+
+## Visualizing Feature Effects
+
+### Beeswarm Plot
+
+```{r beeswarm-plot, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=8}
+# Create beeswarm-style plot
+beeswarm_df <- shap_vals %>%
+  pivot_longer(cols = all_of(feature_cols),
+               names_to = "feature",
+               values_to = "shap_value") %>%
+  left_join(data.frame(observation = shap_vals$observation,
+                       actual_mpg = y,
+                       predicted_mpg = preds$.pred),
+            by = "observation")
+
+ggplot(beeswarm_df, aes(x = shap_value, y = reorder(feature, shap_value, mean), color = actual_mpg)) +
+  geom_point(alpha = 0.6, size = 2) +
+  scale_color_gradient2(low = "darkred", mid = "gray80", high = "darkgreen",
+                        midpoint = median(y)) +
+  facet_wrap(~ feature, scales = "free_x", ncol = 1) +
+  labs(title = "SHAP Beeswarm Plot",
+       subtitle = "Feature values colored by actual MPG (red=low, green=high)",
+       x = "SHAP value",
+       y = "Feature",
+       color = "Actual MPG") +
+  theme_minimal() +
+  theme(strip.text.y = element_blank(),
+        axis.text.y = element_blank())
+```
+
+### Feature Value vs SHAP
+
+```{r feature-value-shap, eval=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=6}
+# Plot feature values against SHAP values for top features
+top_features <- importance_df$feature[1:4]
+
+shap_feature_df <- purrr::map_dfr(top_features, function(feat) {
+  data.frame(
+    feature = feat,
+    feature_value = X[[feat]],
+    shap_value = shap_vals[[feat]]
+  )
+})
+
+ggplot(shap_feature_df, aes(x = feature_value, y = shap_value)) +
+  geom_point(alpha = 0.5, size = 1.5) +
+  geom_smooth(method = "loess", se = TRUE, color = "darkred", linetype = "dashed") +
+  facet_wrap(~ feature, scales = "free", ncol = 2) +
+  labs(title = "Feature Values vs SHAP Values",
+       subtitle = "Relationship between feature values and their contribution to predictions",
+       x = "Feature Value",
+       y = "SHAP Value") +
+  theme_minimal()
+```
+
+## Interaction Effects
+
+### Two-Way Interaction Plot
+
+```{r interaction-plot, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# Interaction between hp and wt
+interaction_df <- data.frame(
+  hp = X$hp,
+  wt = X$wt,
+  hp_shap = shap_vals$hp,
+  wt_shap = shap_vals$wt
+)
+
+ggplot(interaction_df, aes(x = hp, y = wt)) +
+  geom_point(aes(color = hp_shap), size = 3, alpha = 0.7) +
+  scale_color_gradient2(low = "blue", mid = "white", high = "red") +
+  geom_point(aes(shape = wt_shap > 0), size = 2) +
+  scale_shape_manual(values = c("FALSE" = 1, "TRUE" = 16)) +
+  labs(title = "Interaction: Horsepower vs Weight",
+       subtitle = "Color = HP SHAP value | Shape = WT SHAP direction (open=negative, filled=positive)",
+       x = "Horsepower",
+       y = "Weight",
+       color = "HP SHAP Value",
+       shape = "WT SHAP Direction") +
+  theme_minimal()
+```
+
+## Prediction Decomposition
+
+### Waterfall-style Decomposition
+
+```{r decomposition-plot, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+# Decompose prediction for first observation
+obs_idx <- 1
+feat_cols <- setdiff(names(shap_vals), c("observation", ".base_value"))
+
+decomp_df <- data.frame(
+  feature = feat_cols,
+  shap_value = shap_vals[obs_idx, feat_cols] %>% unlist(),
+  feature_value = X[obs_idx, feat_cols] %>% unlist()
+) %>%
+  mutate(base_value = shap_vals$.base_value[obs_idx]) %>%
+  arrange(shap_value) %>%
+  mutate(
+    y_pos = base_value + cumsum(lag(shap_value, default = 0)),
+    y_end = y_pos + shap_value,
+    label_pos = ifelse(shap_value > 0, y_end, y_pos)
+  )
+
+ggplot(decomp_df, aes(x = reorder(feature, shap_value))) +
+  geom_segment(aes(xend = feature, y = y_pos, yend = y_end),
+               color = ifelse(decomp_df$shap_value > 0, "darkgreen", "darkred"),
+               linewidth = 8) +
+  geom_text(aes(y = label_pos, label = round(shap_value, 2)),
+            hjust = ifelse(decomp_df$shap_value > 0, -0.1, 1.1),
+            size = 3) +
+  geom_hline(yintercept = decomp_df$base_value, linetype = "dashed", color = "gray50") +
+  coord_flip() +
+  labs(title = "Prediction Decomposition (First Observation)",
+       subtitle = paste("Base value:", round(decomp_df$base_value, 2),
+                        "| Final prediction:", round(sum(decomp_df$shap_value) + decomp_df$base_value, 2)),
+       x = "Feature",
+       y = "MPG") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 9))
+```
+
+## Summary of Findings
+
+```{r summary, eval=TRUE, message=FALSE, warning=FALSE}
+cat("=== SHAP Analysis Summary ===\n\n")
+cat("Top features by importance:\n")
+print(head(importance_df, 3))
+
+cat("\nFeature impact direction:\n")
+for (feat in importance_df$feature[1:3]) {
+  direction <- ifelse(importance_df$mean_shap[importance_df$feature == feat] > 0, 
+                      "positive", "negative")
+  cat(feat, "-", direction, "impact on average\n")
+}
+```
+
+## Using with Classification
+
+```{r classification-shap, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+# Classification example with iris
+data(iris)
+
+X_cls <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")]
+y_cls <- iris$Species
+
+model_cls <- tab_pfn_classification(X_cls, y_cls, device = "auto")
+
+# Get SHAP values (note: this explains the classification scores)
+shap_cls <- shap_values(model_cls, X_cls[1:50, ], verbose = FALSE)
+
+plot_shap_summary(shap_cls, top_n = 4)
+```
+
+## Summary
+
+SHAP explanations with TabPFN provide:
+
+- **Global interpretability**: Understanding which features drive predictions overall
+- **Local interpretability**: Explaining individual predictions
+- **Feature importance**: Quantitative ranking of feature contributions
+- **Directional effects**: Understanding whether features increase or decrease predictions
+- **Dependency visualization**: Seeing how feature values relate to SHAP values
+
+Key applications:
+- Model validation and debugging
+- Communicating model decisions to stakeholders
+- Feature selection and engineering
+- Understanding model behavior on specific cases

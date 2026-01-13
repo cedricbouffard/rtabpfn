@@ -100,6 +100,65 @@ preds_class <- predict(model, X, type = "class")
 preds_prob <- predict(model, X, type = "prob")
 ```
 
+### Using with tidymodels
+
+```r
+library(tidymodels)
+library(rtabpfn)
+
+# Classification with workflows
+tab_spec <- tab_pfn(mode = "classification") %>%
+  set_engine("tabpfn")
+
+tab_wf <- workflow() %>%
+  add_formula(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width) %>%
+  add_model(tab_spec)
+
+tab_fit <- fit(tab_wf, data = iris)
+predict(tab_fit, iris[1:5, ])
+
+# Regression with tidymodels
+reg_spec <- tab_pfn(mode = "regression") %>%
+  set_engine("tabpfn")
+
+reg_wf <- workflow() %>%
+  add_formula(mpg ~ .) %>%
+  add_model(reg_spec)
+
+reg_fit <- fit(reg_wf, data = mtcars)
+predict(reg_fit, mtcars[1:5, ])
+
+# Cross-validation
+folds <- vfold_cv(mtcars, v = 5)
+
+cv_results <- fit_resamples(
+  workflow() %>%
+    add_formula(mpg ~ .) %>%
+    add_model(reg_spec),
+  resamples = folds,
+  metrics = metric_set(rmse, rsq)
+)
+
+collect_metrics(cv_results)
+
+# Hyperparameter tuning (if/when TabPFN supports tunable parameters)
+tune_spec <- tab_pfn(mode = "regression") %>%
+  set_engine("tabpfn") %>%
+  update(N_ensemble_configurations = tune())
+
+tune_wf <- workflow() %>%
+  add_formula(mpg ~ .) %>%
+  add_model(tune_spec)
+
+tune_results <- tune_grid(
+  tune_wf,
+  resamples = vfold_cv(mtcars, v = 3),
+  grid = 4
+)
+
+show_best(tune_results, metric = "rmse")
+```
+
 ### SHAP Explanations
 
 ```r

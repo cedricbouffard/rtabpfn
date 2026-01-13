@@ -27,6 +27,13 @@ ensure_python_env <- function() {
 
 # Auto-configure environment on package load
 .onLoad <- function(libname, pkgname) {
+  # Register model with parsnip
+  parsnip::set_new_model("tab_pfn")
+  parsnip::set_model_mode("tab_pfn", "classification")
+  parsnip::set_model_mode("tab_pfn", "regression")
+  parsnip::set_model_engine("tab_pfn", "classification", "tabpfn")
+  parsnip::set_model_engine("tab_pfn", "regression", "tabpfn")
+  
   # Auto-detect TabPFN venv in C:/venvs/ if configured path doesn't exist
   if (is.null(.tabpfn_options$python_path)) {
     default_venv <- "C:/venvs/tabpfn/Scripts/python.exe"
@@ -45,6 +52,174 @@ ensure_python_env <- function() {
 
 NULL
 
+#' Check GPU Availability
+#'
+#' @description
+#' Check if a GPU is available on the system
+#'
+#' @return List with GPU detection information (nvidia, amd, apple_silicon, device)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Check if GPU is available
+#' check_gpu_available()
+#' }
+check_gpu_available <- function() {
+  gpu_info <- list(
+    nvidia = FALSE,
+    amd = FALSE,
+    apple_silicon = FALSE,
+    device = "cpu"
+  )
+
+  os <- Sys.info()["sysname"]
+  
+  if (os == "Windows") {
+    tryCatch({
+      if (Sys.which("nvidia-smi") != "") {
+        gpu_info$nvidia <- TRUE
+        gpu_info$device <- "cuda"
+        message("Detected NVIDIA GPU via nvidia-smi")
+      }
+    }, error = function(e) NULL)
+  } else if (os == "Darwin") {
+    tryCatch({
+      arch <- system("uname -m", intern = TRUE)
+      if (arch == "arm64") {
+        gpu_info$apple_silicon <- TRUE
+        gpu_info$device <- "mps"
+        message("Detected Apple Silicon GPU")
+      }
+    }, error = function(e) NULL)
+  } else if (os == "Linux") {
+    tryCatch({
+      if (Sys.which("nvidia-smi") != "") {
+        gpu_info$nvidia <- TRUE
+        gpu_info$device <- "cuda"
+        message("Detected NVIDIA GPU via nvidia-smi")
+      } else if (Sys.which("rocm-smi") != "") {
+        gpu_info$amd <- TRUE
+        gpu_info$device <- "rocm"
+        message("Detected AMD GPU via rocm-smi")
+      }
+    }, error = function(e) NULL)
+  }
+
+  invisible(gpu_info)
+}
+
+
+#' Check PyTorch GPU Status
+#'
+#' @description
+#' Check if PyTorch is using GPU
+#'
+#' @return List with torch GPU status information (torch_available, cuda_available, cuda_version, device_count, device_name)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Check if torch is using GPU
+#' check_torch_gpu()
+#' }
+check_torch_gpu <- function() {
+  result <- list(
+    torch_available = FALSE,
+    cuda_available = FALSE,
+    cuda_version = NULL,
+    device_count = 0,
+    device_name = NULL
+  )
+
+  tryCatch({
+    if (reticulate::py_module_available("torch")) {
+      torch <- reticulate::import("torch")
+      result$torch_available <- TRUE
+      result$cuda_available <- torch$cuda$is_available()
+      
+      if (result$cuda_available) {
+        result$cuda_version <- torch$version$cuda
+        result$device_count <- torch$cuda$device_count()
+        if (result$device_count > 0) {
+          result$device_name <- as.character(torch$cuda$get_device_name(0L))
+        }
+      }
+      
+      cat("PyTorch CUDA Available:", result$cuda_available, "\n")
+      if (result$cuda_available) {
+        cat("CUDA Version:", result$cuda_version, "\n")
+        cat("Device Count:", result$device_count, "\n")
+        if (!is.null(result$device_name)) {
+          cat("Device:", result$device_name, "\n")
+        }
+      }
+    }
+  }, error = function(e) {
+    warning("Error checking PyTorch GPU: ", e$message)
+  })
+
+  invisible(result)
+}
+
+
+#' Setup PyTorch with GPU Support
+#'
+#' @description
+#' Setup PyTorch with correct GPU support
+#'
+#' @param envname Name of the virtual environment
+#' @param force_gpu If TRUE, forces GPU installation even if not detected
+#' @param cuda_version CUDA version to install (default: NULL for auto-detect)
+#'
+#' @return NULL (invisible)
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Setup torch with GPU support
+#' setup_torch()
+#'
+#' # Force GPU installation
+#' setup_torch(force_gpu = TRUE)
+#' }
+setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NULL) {
+  gpu_info <- check_gpu_available()
+  
+  if (!gpu_info$nvidia && !gpu_info$apple_silicon && !force_gpu) {
+    message("No GPU detected. Installing CPU-only PyTorch...")
+    reticulate::py_install("torch", envname = envname, pip = TRUE)
+    return(invisible(NULL))
+  }
+
+  if (gpu_info$nvidia || force_gpu) {
+    message("Installing PyTorch with CUDA support...")
+    
+    if (is.null(cuda_version)) {
+      cuda_version <- "cu121"
+      message("Using CUDA version: ", cuda_version, " (default)")
+    }
+    
+    tryCatch({
+      reticulate::py_install(paste0("torch==2.2.0+", cuda_version), 
+                             envname = envname, pip = TRUE)
+      message("PyTorch with CUDA installed successfully!")
+    }, error = function(e) {
+      warning("Failed to install PyTorch with CUDA: ", e$message)
+      message("Falling back to CPU-only PyTorch...")
+      reticulate::py_install("torch", envname = envname, pip = TRUE)
+    })
+  } else if (gpu_info$apple_silicon) {
+    message("Installing PyTorch with MPS support for Apple Silicon...")
+    reticulate::py_install("torch", envname = envname, pip = TRUE)
+    message("PyTorch for Apple Silicon installed successfully!")
+  }
+
+  invisible(NULL)
+}
+
+
+#' Check TabPFN Installation
 #'
 #' @description
 #' Helper function to check if TabPFN is installed in the Python environment
@@ -104,7 +279,7 @@ check_tabpfn <- function(install = FALSE,
 #'
 #' @description
 #' Sets up of Python environment for TabPFN usage. Automatically checks for TabPFN
-#' virtual environment in C:/venvs/tabpfn/ by default.
+#' virtual environment in C:/venvs/tabpfn/ by default. Detects and configures GPU support.
 #'
 #' @param python_path Path to Python executable (e.g., "C:/venvs/tabpfn/Scripts/python.exe")
 #' @param envname Name of the virtual environment (used only if python_path is NULL)
@@ -112,6 +287,9 @@ check_tabpfn <- function(install = FALSE,
 #' @param install_shap Logical. If TRUE, installs tabpfn-extensions for SHAP support
 #' @param install_unsupervised Logical. If TRUE, installs tabpfn-extensions unsupervised module
 #' @param disable_analytics Logical. If TRUE, disables PostHog analytics (default: TRUE)
+#' @param setup_gpu Logical. If TRUE, attempts to setup GPU support (default: TRUE)
+#' @param force_gpu Logical. If TRUE, forces GPU installation even if not detected
+#' @param cuda_version CUDA version to install (default: NULL for auto-detect)
 #'
 #' @return NULL (invisible)
 #' @export
@@ -132,8 +310,17 @@ check_tabpfn <- function(install = FALSE,
 #'
 #' # Setup with unsupervised anomaly detection
 #' setup_tabpfn(install_unsupervised = TRUE)
+#'
+#' # Setup without GPU
+#' setup_tabpfn(setup_gpu = FALSE)
+#'
+#' # Force GPU installation
+#' setup_tabpfn(force_gpu = TRUE)
 #' }
-setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE, install_shap = FALSE, install_unsupervised = FALSE, disable_analytics = TRUE) {
+setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE, 
+                         install_shap = FALSE, install_unsupervised = FALSE, 
+                         disable_analytics = TRUE, setup_gpu = TRUE, 
+                         force_gpu = FALSE, cuda_version = NULL) {
 
   # Disable analytics by default to avoid PostHog warnings
   if (disable_analytics) {
@@ -189,6 +376,28 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE, 
     }, error = function(e) {
       # Continue even if we can't store the path
     })
+  }
+
+  # Setup PyTorch with GPU support if requested
+  if (setup_gpu) {
+    message("\nChecking GPU configuration...")
+    gpu_info <- check_gpu_available()
+    
+    if (gpu_info$nvidia) {
+      message("NVIDIA GPU detected, configuring PyTorch with CUDA support...")
+    } else if (gpu_info$apple_silicon) {
+      message("Apple Silicon detected, configuring PyTorch with MPS support...")
+    } else {
+      message("No GPU detected, using CPU-only PyTorch...")
+    }
+    
+    setup_torch(envname = envname, force_gpu = force_gpu, cuda_version = cuda_version)
+    
+    # Verify torch GPU setup
+    torch_status <- check_torch_gpu()
+    if (!torch_status$torch_available) {
+      warning("PyTorch not properly installed. TabPFN may not work correctly.")
+    }
   }
 
   # Check and install TabPFN

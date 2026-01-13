@@ -222,11 +222,26 @@ shap_values <- function(object,
     object$predictor_names
   })
 
-  # Ensure shap_values is a matrix
-  if (!is.matrix(shap_values)) {
-    shap_matrix <- as.matrix(shap_values)
+  # Handle multi-dimensional SHAP arrays (e.g., for classification)
+  shap_array <- shap_values
+  shap_dims <- dim(shap_array)
+  
+  if (length(shap_dims) == 3) {
+    # Classification: average over classes to get 2D array
+    if (verbose) {
+      cat("  Detected 3D SHAP array (classification model)\n")
+      cat("  Averaging over", shap_dims[3], "classes\n")
+    }
+    # Average over classes (third dimension)
+    shap_matrix <- apply(shap_array, c(1, 2), mean)
+  } else if (length(shap_dims) == 2) {
+    # Regression or already 2D
+    shap_matrix <- shap_array
+  } else if (!is.matrix(shap_array)) {
+    # Try to convert to matrix
+    shap_matrix <- as.matrix(shap_array)
   } else {
-    shap_matrix <- shap_values
+    shap_matrix <- shap_array
   }
 
   # Set feature names as column names
@@ -354,21 +369,25 @@ plot_shap_dependence <- function(shap_df, feature_data, feature, color_feature =
     shap_value = shap_df[[feature]]
   )
 
-  # Create plot
-  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = feature_value, y = shap_value)) +
-    ggplot2::geom_point(alpha = 0.5) +
-    ggplot2::labs(
-      title = paste("SHAP Dependence:", feature),
-      x = feature,
-      y = paste0("SHAP value for ", feature)
-    ) +
-    ggplot2::theme_minimal()
-
-  if (!is.null(color_feature) && color_feature %in% names(feature_data)) {
+  # Check if color feature should be included
+  has_color <- !is.null(color_feature) && color_feature %in% names(feature_data)
+  
+  if (has_color) {
     plot_data$color_feature <- feature_data[[color_feature]]
-    p <- p + ggplot2::aes(color = color_feature) +
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = feature_value, y = shap_value, color = color_feature)) +
+      ggplot2::geom_point(alpha = 0.5) +
       ggplot2::scale_color_gradientn(colors = c("blue", "red"))
+  } else {
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = feature_value, y = shap_value)) +
+      ggplot2::geom_point(alpha = 0.5)
   }
+  
+  p <- p + ggplot2::labs(
+    title = paste("SHAP Dependence:", feature),
+    x = feature,
+    y = paste0("SHAP value for ", feature)
+  ) +
+  ggplot2::theme_minimal()
 
   return(p)
 }

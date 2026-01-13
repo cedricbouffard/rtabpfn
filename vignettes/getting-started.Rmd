@@ -19,14 +19,14 @@ key features, focusing on quantile predictions and uncertainty estimation.
 
 First, ensure the Python environment is configured:
 
-```{r setup, eval=FALSE}
+```{r setup, eval=TRUE}
 library(rtabpfn)
 setup_tabpfn()
 ```
 
 ## Regression with Quantiles
 
-```{r regression, eval=FALSE}
+```{r regression, eval=TRUE}
 # Load data
 data(mtcars)
 X <- mtcars[, c("cyl", "disp", "hp", "wt")]
@@ -45,7 +45,7 @@ head(preds)
 
 ## Visualizing Uncertainty
 
-```{r visualization, eval=FALSE}
+```{r visualization, eval=TRUE}
 library(ggplot2)
 
 # Combine predictions with actual values

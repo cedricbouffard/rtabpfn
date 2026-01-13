@@ -19,12 +19,15 @@ Imports:
     reticulate (>= 1.28),
     tibble (>= 3.0.0),
     tidyr (>= 1.0.0),
-    dplyr (>= 1.0.0)
+    dplyr (>= 1.0.0),
+    parsnip (>= 1.0.0),
+    hardhat (>= 1.0.0)
 Suggests:
     ggplot2 (>= 3.0.0),
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    pkgdown
 RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 URL: https://github.com/cedricbouffard/rtabpfn

@@ -1,0 +1,226 @@
+---
+title: "Regression with TabPFN"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Regression with TabPFN}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+The `rtabpfn` package provides a powerful interface for regression tasks using the TabPFN (Tabular Prior-Fitted Network) foundation model. TabPFN leverages prior knowledge from millions of datasets to achieve excellent predictive performance, especially on small datasets.
+
+## Setup
+
+First, ensure the Python environment is configured:
+
+```{r setup, eval=TRUE}
+library(rtabpfn)
+setup_tabpfn()
+```
+
+Load required packages:
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Basic Regression
+
+Let's use the `mtcars` dataset to predict miles per gallon (mpg) based on engine characteristics:
+
+```{r regression-basic, eval=TRUE, message=FALSE, warning=FALSE}
+# Load data
+data(mtcars)
+
+# Prepare predictors and response
+X <- mtcars[, c("cyl", "disp", "hp", "wt", "qsec")]
+y <- mtcars$mpg
+
+# Train model
+model <- tab_pfn_regression(X, y, device = "auto")
+
+# Make predictions
+preds <- predict(model, X, type = "numeric")
+
+head(preds)
+```
+
+## Quantile Predictions
+
+TabPFN supports quantile predictions, providing uncertainty estimates for your predictions:
+
+```{r regression-quantiles, eval=TRUE, message=FALSE, warning=FALSE}
+# Get quantile predictions
+quantile_preds <- predict(model, X, 
+                          type = "quantiles",
+                          quantiles = c(0.1, 0.25, 0.5, 0.75, 0.9))
+
+head(quantile_preds)
+```
+
+## Visualizing Predictions
+
+### Predictions vs Actual
+
+```{r plot-predictions, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# Combine predictions with actual values
+df <- data.frame(
+  actual = y,
+  predicted = preds$.pred
+)
+
+ggplot(df, aes(x = actual, y = predicted)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  labs(title = "Predicted vs Actual MPG",
+       subtitle = "TabPFN Regression Model",
+       x = "Actual MPG",
+       y = "Predicted MPG") +
+  theme_minimal() +
+  coord_fixed(xlim = c(10, 35), ylim = c(10, 35))
+```
+
+### Uncertainty Intervals
+
+```{r plot-uncertainty, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# Create dataframe with quantiles
+df_quant <- data.frame(
+  actual = y,
+  median = quantile_preds$.pred_q050,
+  q25 = quantile_preds$.pred_q025,
+  q75 = quantile_preds$.pred_q075,
+  q10 = quantile_preds$.pred_q010,
+  q90 = quantile_preds$.pred_q090
+)
+
+ggplot(df_quant, aes(x = actual, y = median)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") +
+  geom_errorbar(aes(ymin = q10, ymax = q90), 
+                width = 0.5, alpha = 0.3, color = "steelblue") +
+  geom_errorbar(aes(ymin = q25, ymax = q75), 
+                width = 0.5, alpha = 0.5, color = "steelblue") +
+  geom_point(color = "steelblue", size = 3) +
+  labs(title = "Predictions with Uncertainty Intervals",
+       subtitle = "Blue band: 25th-75th percentile | Light band: 10th-90th percentile",
+       x = "Actual MPG",
+       y = "Predicted MPG") +
+  theme_minimal() +
+  coord_fixed(xlim = c(10, 35), ylim = c(10, 35))
+```
+
+### Prediction Intervals
+
+```{r plot-conf-int, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# Get 95% confidence intervals
+conf_preds <- predict(model, X, type = "conf_int", level = 0.95)
+
+df_conf <- data.frame(
+  actual = y,
+  predicted = predict(model, X, type = "numeric")$.pred,
+  lower = conf_preds$.pred_lower,
+  upper = conf_preds$.pred_upper
+)
+
+ggplot(df_conf, aes(x = actual, y = predicted)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray50") +
+  geom_errorbar(aes(ymin = lower, ymax = upper), 
+                width = 0.5, alpha = 0.5, color = "darkred") +
+  geom_point(color = "darkred", size = 3) +
+  labs(title = "Predictions with 95% Confidence Intervals",
+       x = "Actual MPG",
+       y = "Predicted MPG") +
+  theme_minimal() +
+  coord_fixed(xlim = c(10, 35), ylim = c(10, 35))
+```
+
+## Residual Analysis
+
+```{r plot-residuals, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# Calculate residuals
+df_resid <- data.frame(
+  predicted = preds$.pred,
+  residual = y - preds$.pred
+)
+
+# Residual plot
+ggplot(df_resid, aes(x = predicted, y = residual)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  labs(title = "Residual Plot",
+       subtitle = "Residuals vs Fitted Values",
+       x = "Predicted Values",
+       y = "Residuals") +
+  theme_minimal()
+```
+
+```{r plot-hist-residuals, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+# Histogram of residuals
+ggplot(df_resid, aes(x = residual)) +
+  geom_histogram(bins = 15, fill = "steelblue", color = "white", alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Distribution of Residuals",
+       x = "Residuals",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+## Feature Relationships
+
+```{r plot-feature-rel, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+# Relationship between weight and MPG
+df_wt <- data.frame(
+  wt = mtcars$wt,
+  actual_mpg = mtcars$mpg,
+  pred_mpg = preds$.pred
+)
+
+ggplot(df_wt, aes(x = wt)) +
+  geom_point(aes(y = actual_mpg, color = "Actual"), size = 3, alpha = 0.7) +
+  geom_point(aes(y = pred_mpg, color = "Predicted"), size = 3, alpha = 0.7) +
+  labs(title = "Weight vs MPG: Actual vs Predicted",
+       x = "Weight (1000 lbs)",
+       y = "Miles Per Gallon",
+       color = "Type") +
+  scale_color_manual(values = c("Actual" = "steelblue", "Predicted" = "darkred")) +
+  theme_minimal()
+```
+
+## Using with tidymodels
+
+TabPFN also integrates with the tidymodels ecosystem:
+
+```{r tidymodels, eval=FALSE}
+library(tidymodels)
+
+# Create model specification
+tabpfn_spec <- tab_pfn(mode = "regression") %>%
+  set_engine("tabpfn")
+
+# Fit using workflow
+workflow <- workflow() %>%
+  add_model(tabpfn_spec) %>%
+  add_formula(mpg ~ cyl + disp + hp + wt + qsec)
+
+fit_result <- workflow %>%
+  fit(mtcars)
+
+# Make predictions
+preds_tm <- predict(fit_result, mtcars)
+```
+
+## Summary
+
+TabPFN provides excellent regression performance with built-in uncertainty estimation through quantile predictions. The model is particularly effective for:
+- Small to medium-sized datasets
+- Quick prototyping without extensive hyperparameter tuning
+- When uncertainty estimates are needed
+
+Key features demonstrated:
+- Point predictions with `type = "numeric"`
+- Quantile predictions for uncertainty estimation
+- Prediction intervals with configurable confidence levels
+- Integration with tidymodels ecosystem
