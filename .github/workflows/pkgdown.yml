@@ -1,0 +1,50 @@
+name: pkgdown
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy pkgdown
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pkgdown@v2
+
+      - name: Install dependencies
+        run: |
+          install.packages(c("remotes", "pkgdown"), repos = "https://cloud.r-project.org")
+          remotes::install_deps(dependencies = TRUE, upgrade = "never")
+          remotes::install_cran("pkgdown")
+
+      - name: Build pkgdown site
+        run: Rscript -e 'pkgdown::build_site()'
+
+      - name: Deploy to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+  publish:
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
