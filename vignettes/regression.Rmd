@@ -191,7 +191,7 @@ ggplot(df_wt, aes(x = wt)) +
 
 ## Using with tidymodels
 
-TabPFN also integrates with the tidymodels ecosystem:
+TabPFN also integrates with tidymodels ecosystem:
 
 ```{r tidymodels, eval=FALSE}
 library(tidymodels)

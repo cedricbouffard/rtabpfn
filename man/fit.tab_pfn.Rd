@@ -5,7 +5,7 @@
 \title{Fit a TabPFN model}
 \usage{
 fit.tab_pfn(
-  x,
+  object,
   formula = NULL,
   data = NULL,
   control = parsnip::control_fit(),
@@ -13,7 +13,7 @@ fit.tab_pfn(
 )
 }
 \arguments{
-\item{x}{A model specification}
+\item{object}{A model specification}
 
 \item{formula}{A formula specifying the model}
 
@@ -29,4 +29,3 @@ A fitted model object
 \description{
 Fit a TabPFN model
 }
-\keyword{internal}

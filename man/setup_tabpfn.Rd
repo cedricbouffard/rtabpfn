@@ -10,6 +10,7 @@ setup_tabpfn(
   force = FALSE,
   install_shap = FALSE,
   install_unsupervised = FALSE,
+  install_time_series = FALSE,
   disable_analytics = TRUE,
   setup_gpu = TRUE,
   force_gpu = FALSE,
@@ -26,6 +27,8 @@ setup_tabpfn(
 \item{install_shap}{Logical. If TRUE, installs tabpfn-extensions for SHAP support}
 
 \item{install_unsupervised}{Logical. If TRUE, installs tabpfn-extensions unsupervised module}
+
+\item{install_time_series}{Logical. If TRUE, installs tabpfn-time-series for forecasting}
 
 \item{disable_analytics}{Logical. If TRUE, disables PostHog analytics (default: TRUE)}
 

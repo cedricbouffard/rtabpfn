@@ -13,6 +13,7 @@ setup_tabpfn(
   force = FALSE,
   install_shap = FALSE,
   install_unsupervised = FALSE,
+  install_time_series = FALSE,
   disable_analytics = TRUE,
   setup_gpu = TRUE,
   force_gpu = FALSE,
@@ -41,6 +42,10 @@ setup_tabpfn(
 - install_unsupervised:
 
   Logical. If TRUE, installs tabpfn-extensions unsupervised module
+
+- install_time_series:
+
+  Logical. If TRUE, installs tabpfn-time-series for forecasting
 
 - disable_analytics:
 

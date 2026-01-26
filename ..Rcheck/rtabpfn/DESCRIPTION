@@ -1,0 +1,26 @@
+Package: rtabpfn
+Type: Package
+Title: TabPFN Interface
+Version: 0.1.0
+Authors@R: c(
+    person("Cedric", "Bouffard", email = "info@cedricbouffard.com", role = c("aut", "cre"))
+    )
+Author: Cedric Bouffard [cre, aut]
+Maintainer: Cedric Bouffard <info@cedricbouffard.com>
+Description: An R interface to the TabPFN (Tabular Prior-Fitted Network)
+    foundation model for tabular data. Built on top of reticulate to interface
+    with the Python TabPFN library.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.0.0)
+Imports: reticulate (>= 1.28), tibble (>= 3.0.0), tidyr (>= 1.0.0),
+        dplyr (>= 1.0.0), parsnip (>= 1.0.0), hardhat (>= 1.0.0),
+        lubridate (>= 1.7.0)
+Suggests: ggplot2 (>= 3.0.0), testthat (>= 3.0.0), knitr, rmarkdown,
+        pkgdown
+RoxygenNote: 7.3.3
+VignetteBuilder: knitr
+URL: https://cedricbouffard.github.io/rtabpfn/
+BugReports: https://github.com/cedricbouffard/rtabpfn/issues
+Built: R 4.5.2; ; 2026-01-17 11:36:17 UTC; windows

@@ -6,7 +6,7 @@
 \alias{update.tab_pfn}
 \title{TabPFN Model for tidymodels}
 \usage{
-get_encoding.tab_pfn()
+get_encoding.tab_pfn(object)
 
 tab_pfn(
   mode = "unknown",
@@ -28,6 +28,8 @@ tab_pfn(
 )
 }
 \arguments{
+\item{object}{A model specification}
+
 \item{mode}{A single character string for the prediction mode: "classification" or "regression"}
 
 \item{engine}{A single character string specifying the computational engine. For TabPFN, this is always "tabpfn"}

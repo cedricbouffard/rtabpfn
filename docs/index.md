@@ -1,7 +1,9 @@
+# Time series forecasting with tidymodels
+
 ``` markdown
 # rtabpfn
 
-R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, and SHAP explanations.
+R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, SHAP explanations, and time series forecasting.
 
 ## Installation
 
@@ -26,6 +28,9 @@ setup_tabpfn(install_shap = TRUE)
 
 # For unsupervised anomaly detection, install tabpfn-extensions[unsupervised]
 setup_tabpfn(install_unsupervised = TRUE)
+
+# For time series forecasting, install tabpfn-time-series
+setup_tabpfn(install_time_series = TRUE)
 ```
 
 If you have a Python virtual environment elsewhere, specify the path:
@@ -167,26 +172,31 @@ tune_results <- tune_grid(
 show_best(tune_results, metric = "rmse")
 ```
 
-### SHAP Explanations
+ts_spec \<- tab_pfn_ts(mode = “regression”) %\>% set_engine(“tabpfn_ts”)
+%\>% set_args(prediction_length = 12, quantiles = c(0.1, 0.5, 0.9))
 
-``` r
+ts_fit \<- fit(ts_spec, data = ts_data) forecasts \<- predict(ts_fit,
+ts_data)
 
-# Install tabpfn-extensions for SHAP support
-# reticulate::py_install("tabpfn-extensions")
 
-# Check if SHAP is available
-check_shap_available()
+    ### SHAP Explanations
 
-# Calculate SHAP values
-shap_vals <- shap_values(model, X)
+    ```r
+    # Install tabpfn-extensions for SHAP support
+    # reticulate::py_install("tabpfn-extensions")
 
-# Plot SHAP summary
-plot_shap_summary(shap_vals)
+    # Check if SHAP is available
+    check_shap_available()
 
-# Explain individual prediction
-explanation <- explain_prediction(model, X[1, , drop = FALSE])
-print(explanation)
-```
+    # Calculate SHAP values
+    shap_vals <- shap_values(model, X)
+
+    # Plot SHAP summary
+    plot_shap_summary(shap_vals)
+
+    # Explain individual prediction
+    explanation <- explain_prediction(model, X[1, , drop = FALSE])
+    print(explanation)
 
 ### Unsupervised Anomaly Detection
 
@@ -216,6 +226,29 @@ most_anomalous <- scores |>
 predictions <- predict(model, X, threshold = -50)
 ```
 
+### Time Series Forecasting
+
+``` r
+
+library(rtabpfn)
+library(dplyr)
+library(lubridate)
+
+# Prepare time series data
+dates <- seq(as.Date("2020-01-01"), as.Date("2022-12-31"), by = "day")
+values <- sin(seq(0, 2*pi, length.out = length(dates))) * 10 + rnorm(length(dates), 0, 1)
+ts_data <- tibble(date = dates, value = values)
+
+# Train forecasting model
+model <- tab_pfn_time_series(ts_data, prediction_length = 30)
+
+# Generate forecasts
+forecasts <- predict(model, ts_data)
+
+# Get point forecasts and quantiles
+print(forecasts)
+```
+
 ## Features
 
 - **Quantile Predictions**: Get uncertainty estimates via quantile
@@ -225,6 +258,8 @@ predictions <- predict(model, X, threshold = -50)
 - **SHAP Explanations**: Compute SHAP values for model interpretability
 - **Unsupervised Anomaly Detection**: Detect outliers using joint
   probability estimation
+- **Time Series Forecasting**: Zero-shot time series forecasting with
+  probabilistic predictions
 - **Multiple Output Types**: Support for mean, median, mode, and full
   distribution
 - **Classification Support**: Both class labels and probabilities

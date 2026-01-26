@@ -9,18 +9,34 @@
 
 # Function to ensure the correct Python environment is active
 ensure_python_env <- function() {
+  # Check if there's a saved R option and restore it
+  if (is.null(.tabpfn_options$python_path)) {
+    saved_python_path <- getOption("rtabpfn.python_path")
+    if (!is.null(saved_python_path) && file.exists(saved_python_path)) {
+      .tabpfn_options$python_path <- saved_python_path
+    }
+  }
+
   if (!is.null(.tabpfn_options$python_path) && file.exists(.tabpfn_options$python_path)) {
     current_python <- tryCatch({
       reticulate::py_config()$python
     }, error = function(e) NULL)
 
+    # Check if Python is already initialized
+    is_initialized <- tryCatch({
+      reticulate::py_available()
+    }, error = function(e) FALSE)
+
     if (is.null(current_python) || !identical(normalizePath(current_python), normalizePath(.tabpfn_options$python_path))) {
-      message("Configuring TabPFN Python environment...")
-      tryCatch({
-        reticulate::use_python(.tabpfn_options$python_path, required = TRUE)
-      }, error = function(e) {
-        warning("Failed to configure Python environment: ", e$message)
-      })
+      # Only try to configure if Python is not already initialized
+      # or if it's initialized with a different version
+      if (!is_initialized) {
+        tryCatch({
+          reticulate::use_python(.tabpfn_options$python_path, required = FALSE)
+        }, error = function(e) {
+          # Silent fail - will be retried when actually needed
+        })
+      }
     }
   }
 }
@@ -33,24 +49,95 @@ ensure_python_env <- function() {
   parsnip::set_model_mode("tab_pfn", "regression")
   parsnip::set_model_engine("tab_pfn", "classification", "tabpfn")
   parsnip::set_model_engine("tab_pfn", "regression", "tabpfn")
-  
-  # Auto-detect TabPFN venv in C:/venvs/ if configured path doesn't exist
+
+  # Register time series model with parsnip
+  parsnip::set_new_model("tab_pfn_ts")
+  parsnip::set_model_mode("tab_pfn_ts", "regression")
+  parsnip::set_model_engine("tab_pfn_ts", "regression", "tabpfn_ts")
+
+  # Restore saved Python path from R option
+  saved_python_path <- getOption("rtabpfn.python_path")
+  if (!is.null(saved_python_path) && file.exists(saved_python_path)) {
+    .tabpfn_options$python_path <- saved_python_path
+  }
+
+  # Auto-detect best TabPFN venv (prioritizing ones with tabpfn-time-series)
+  auto_detect_best_tabpfn_env <- function() {
+    venv_paths <- c(
+      "C:/Users/cedbo/OneDrive/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
+      "~/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
+      "C:/Users/cedbo/.virtualenvs/tabpfn/Scripts/python.exe",
+      "~/.virtualenvs/tabpfn/Scripts/python.exe",
+      "C:/venvs/tabpfn/Scripts/python.exe"
+    )
+
+    for (venv_path in venv_paths) {
+      expanded_path <- path.expand(venv_path)
+      if (file.exists(expanded_path)) {
+        venv_dir <- dirname(expanded_path)
+        site_packages <- file.path(venv_dir, "../Lib/site-packages")
+        if (dir.exists(site_packages)) {
+          pkg_dirs <- list.dirs(site_packages, full.names = FALSE, recursive = FALSE)
+          if ("tabpfn_time_series" %in% pkg_dirs) {
+            return(expanded_path)
+          }
+        }
+      }
+    }
+    return(NULL)
+  }
+
+  # Fallback: detect any TabPFN venv
+  auto_detect_any_tabpfn_env <- function() {
+    venv_paths <- c(
+      "C:/Users/cedbo/OneDrive/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
+      "~/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
+      "C:/Users/cedbo/.virtualenvs/tabpfn/Scripts/python.exe",
+      "~/.virtualenvs/tabpfn/Scripts/python.exe",
+      "C:/venvs/tabpfn/Scripts/python.exe"
+    )
+
+    for (venv_path in venv_paths) {
+      expanded_path <- path.expand(venv_path)
+      if (file.exists(expanded_path)) {
+        return(expanded_path)
+      }
+    }
+    return(NULL)
+  }
+
   if (is.null(.tabpfn_options$python_path)) {
-    default_venv <- "C:/venvs/tabpfn/Scripts/python.exe"
-    if (file.exists(default_venv)) {
-      .tabpfn_options$python_path <- default_venv
+    # First try to find venv with tabpfn-time-series
+    best_path <- auto_detect_best_tabpfn_env()
+    if (!is.null(best_path)) {
+      .tabpfn_options$python_path <- best_path
       tryCatch({
-        reticulate::use_python(default_venv, required = FALSE)
+        reticulate::use_python(best_path, required = FALSE)
+        message("Auto-detected TabPFN Python environment at: ", best_path)
       }, error = function(e) {
         # Silent fail during package load
       })
+    } else {
+      # Fallback to any TabPFN venv
+      any_path <- auto_detect_any_tabpfn_env()
+      if (!is.null(any_path)) {
+        .tabpfn_options$python_path <- any_path
+        tryCatch({
+          reticulate::use_python(any_path, required = FALSE)
+          message("Auto-detected TabPFN Python environment at: ", any_path)
+          message("Note: tabpfn-time-series not found in this environment")
+          message("Install with: setup_tabpfn(install_time_series = TRUE)")
+        }, error = function(e) {
+          # Silent fail during package load
+        })
+      }
     }
-  } else {
-    ensure_python_env()
   }
-}
 
-NULL
+  # Don't call ensure_python_env() during package load to avoid conflicts
+  # It will be called when actually needed (e.g., when calling TabPFN functions)
+  # ensure_python_env()
+}
 
 #' Check GPU Availability
 #'
@@ -74,7 +161,7 @@ check_gpu_available <- function() {
   )
 
   os <- Sys.info()["sysname"]
-  
+
   if (os == "Windows") {
     tryCatch({
       if (Sys.which("nvidia-smi") != "") {
@@ -137,7 +224,7 @@ check_torch_gpu <- function() {
       torch <- reticulate::import("torch")
       result$torch_available <- TRUE
       result$cuda_available <- torch$cuda$is_available()
-      
+
       if (result$cuda_available) {
         result$cuda_version <- torch$version$cuda
         result$device_count <- torch$cuda$device_count()
@@ -145,7 +232,7 @@ check_torch_gpu <- function() {
           result$device_name <- as.character(torch$cuda$get_device_name(0L))
         }
       }
-      
+
       cat("PyTorch CUDA Available:", result$cuda_available, "\n")
       if (result$cuda_available) {
         cat("CUDA Version:", result$cuda_version, "\n")
@@ -185,7 +272,7 @@ check_torch_gpu <- function() {
 #' }
 setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NULL) {
   gpu_info <- check_gpu_available()
-  
+
   if (!gpu_info$nvidia && !gpu_info$apple_silicon && !force_gpu) {
     message("No GPU detected. Installing CPU-only PyTorch...")
     reticulate::py_install("torch", envname = envname, pip = TRUE)
@@ -193,23 +280,56 @@ setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NU
   }
 
   if (gpu_info$nvidia || force_gpu) {
-    message("Installing PyTorch with CUDA support...")
-    
-    if (is.null(cuda_version)) {
-      cuda_version <- "cu121"
-      message("Using CUDA version: ", cuda_version, " (default)")
-    }
-    
-    tryCatch({
-      reticulate::py_install(paste0("torch==2.2.0+", cuda_version), 
-                             envname = envname, pip = TRUE)
-      message("PyTorch with CUDA installed successfully!")
-    }, error = function(e) {
-      warning("Failed to install PyTorch with CUDA: ", e$message)
-      message("Falling back to CPU-only PyTorch...")
-      reticulate::py_install("torch", envname = envname, pip = TRUE)
-    })
-  } else if (gpu_info$apple_silicon) {
+      message("Installing PyTorch with CUDA support...")
+
+      # Check if torch is already installed with CUDA
+      tryCatch({
+        if (reticulate::py_module_available("torch")) {
+          torch <- reticulate::import("torch")
+          if (torch$cuda$is_available()) {
+            message("PyTorch with CUDA is already installed!")
+            message("CUDA Version: ", torch$version$cuda)
+            return(invisible(NULL))
+          }
+        }
+      }, error = function(e) NULL)
+
+      if (is.null(cuda_version)) {
+        cuda_version <- "cu124"
+        message("Using CUDA version: ", cuda_version, " (default)")
+      }
+
+      tryCatch({
+        # Modern PyTorch installation with index URL
+        message("Installing PyTorch from PyTorch index...")
+        reticulate::py_install("torch",
+                              envname = envname,
+                              pip = TRUE,
+                              index_url = paste0("https://download.pytorch.org/whl/", cuda_version))
+        message("PyTorch with CUDA installed successfully!")
+      }, error = function(e) {
+        warning("Failed to install PyTorch with CUDA via index: ", e$message)
+        message("Trying alternative method...")
+
+        # Fallback: install torch normally, it should auto-detect CUDA
+        tryCatch({
+          reticulate::py_install("torch", envname = envname, pip = TRUE)
+          message("PyTorch installed (will use CUDA if available)")
+
+          # Verify CUDA is working
+          torch <- reticulate::import("torch")
+          if (torch$cuda$is_available()) {
+            message("CUDA detected and working!")
+          } else {
+            message("Note: CUDA not available, using CPU")
+          }
+        }, error = function(e2) {
+          warning("Failed to install PyTorch: ", e2$message)
+          message("Falling back to CPU-only PyTorch...")
+          reticulate::py_install("torch", envname = envname, pip = TRUE)
+        })
+      })
+    } else if (gpu_info$apple_silicon) {
     message("Installing PyTorch with MPS support for Apple Silicon...")
     reticulate::py_install("torch", envname = envname, pip = TRUE)
     message("PyTorch for Apple Silicon installed successfully!")
@@ -286,6 +406,7 @@ check_tabpfn <- function(install = FALSE,
 #' @param force Logical. If TRUE, recreates environment even if it exists
 #' @param install_shap Logical. If TRUE, installs tabpfn-extensions for SHAP support
 #' @param install_unsupervised Logical. If TRUE, installs tabpfn-extensions unsupervised module
+#' @param install_time_series Logical. If TRUE, installs tabpfn-time-series for forecasting
 #' @param disable_analytics Logical. If TRUE, disables PostHog analytics (default: TRUE)
 #' @param setup_gpu Logical. If TRUE, attempts to setup GPU support (default: TRUE)
 #' @param force_gpu Logical. If TRUE, forces GPU installation even if not detected
@@ -317,10 +438,11 @@ check_tabpfn <- function(install = FALSE,
 #' # Force GPU installation
 #' setup_tabpfn(force_gpu = TRUE)
 #' }
-setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE, 
-                         install_shap = FALSE, install_unsupervised = FALSE, 
-                         disable_analytics = TRUE, setup_gpu = TRUE, 
-                         force_gpu = FALSE, cuda_version = NULL) {
+setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
+                          install_shap = FALSE, install_unsupervised = FALSE,
+                          install_time_series = FALSE,
+                          disable_analytics = TRUE, setup_gpu = TRUE,
+                          force_gpu = FALSE, cuda_version = NULL) {
 
   # Disable analytics by default to avoid PostHog warnings
   if (disable_analytics) {
@@ -345,19 +467,53 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
 
     # Use specified or auto-detected Python path
     message("Using Python: ", python_path)
-    tryCatch({
-      reticulate::use_python(python_path, required = TRUE)
-      .tabpfn_options$python_path <- python_path
-    }, error = function(e) {
-      stop("Failed to initialize Python environment at: ", python_path,
-           "\nError: ", e$message,
-           "\n\nSolutions:",
-           "\n1. Recreate the virtual environment:",
-           "   reticulate::virtualenv_remove('tabpfn')",
-           "   setup_tabpfn()",
-           "\n2. Or specify a different Python path:",
-           "   setup_tabpfn(python_path = 'path/to/python.exe')")
-    })
+
+    # Check if Python is already initialized
+    python_already_initialized <- tryCatch({
+      reticulate::py_available()
+    }, error = function(e) FALSE)
+
+    if (python_already_initialized) {
+      # Check which Python is currently being used
+      current_python <- tryCatch({
+        reticulate::py_config()$python
+      }, error = function(e) NULL)
+
+      if (!is.null(current_python) && normalizePath(current_python) == normalizePath(python_path)) {
+        message("Python environment already configured correctly.")
+        .tabpfn_options$python_path <- python_path
+        options(rtabpfn.python_path = python_path)
+      } else {
+        # Python is initialized with a different version
+        warning("Python has already been initialized with a different version.")
+        message("Current Python: ", current_python)
+        message("Requested Python: ", python_path)
+        message("\nNote: Python cannot be re-initialized in the same R session.")
+        message("Please restart R and run setup_tabpfn() again, or")
+        message("unset the RETICULATE_PYTHON environment variable before starting R.")
+        message("\nContinuing with currently initialized Python...")
+
+        # Use the currently initialized Python
+        .tabpfn_options$python_path <- current_python
+        options(rtabpfn.python_path = current_python)
+      }
+    } else {
+      # Python not yet initialized, safe to use
+      tryCatch({
+        reticulate::use_python(python_path, required = TRUE)
+        .tabpfn_options$python_path <- python_path
+        options(rtabpfn.python_path = python_path)
+      }, error = function(e) {
+        stop("Failed to initialize Python environment at: ", python_path,
+             "\nError: ", e$message,
+             "\n\nSolutions:",
+             "\n1. Recreate the virtual environment:",
+             "   reticulate::virtualenv_remove('tabpfn')",
+             "   setup_tabpfn()",
+             "\n2. Or specify a different Python path:",
+             "   setup_tabpfn(python_path = 'path/to/python.exe')")
+      })
+    }
   } else {
     # Use virtual environment by name
     existing_envs <- reticulate::virtualenv_list()
@@ -382,7 +538,7 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
   if (setup_gpu) {
     message("\nChecking GPU configuration...")
     gpu_info <- check_gpu_available()
-    
+
     if (gpu_info$nvidia) {
       message("NVIDIA GPU detected, configuring PyTorch with CUDA support...")
     } else if (gpu_info$apple_silicon) {
@@ -390,9 +546,9 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
     } else {
       message("No GPU detected, using CPU-only PyTorch...")
     }
-    
+
     setup_torch(envname = envname, force_gpu = force_gpu, cuda_version = cuda_version)
-    
+
     # Verify torch GPU setup
     torch_status <- check_torch_gpu()
     if (!torch_status$torch_available) {
@@ -436,6 +592,24 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
       })
     } else {
       message("tabpfn-extensions[unsupervised] already installed.")
+    }
+  }
+
+  # Optionally install tabpfn-time-series for forecasting
+  if (install_time_series) {
+    has_ts <- reticulate::py_module_available("tabpfn_time_series")
+
+    if (!has_ts) {
+      message("Installing tabpfn-time-series for time series forecasting...")
+      tryCatch({
+        reticulate::py_install("tabpfn-time-series", envname = envname, pip = TRUE)
+        message("tabpfn-time-series installed successfully!")
+      }, error = function(e) {
+        warning("Failed to install tabpfn-time-series: ", e$message)
+        message("You can install it manually with: pip install tabpfn-time-series")
+      })
+    } else {
+      message("tabpfn-time-series already installed.")
     }
   }
 
@@ -537,6 +711,24 @@ validate_tabpfn_env <- function() {
       cat("   CUDA available:", torch$cuda$is_available(), "\n")
       results$torch$version <- as.character(torch$`__version__`)
       results$torch$cuda_available <- torch$cuda$is_available()
+    }, error = function(e) {
+      cat("   Warning: Could not get version\n")
+    })
+  }
+
+  cat("\n")
+
+  # Check tabpfn-time-series
+  cat("6. TabPFN Time Series:\n")
+  has_ts <- check_time_series_available()
+  cat("   Available:", has_ts, "\n")
+  results$time_series <- list(available = has_ts)
+
+  if (has_ts) {
+    tryCatch({
+      ts_module <- reticulate::import("tabpfn_time_series")
+      cat("   Version:", ts_module$`__version__`, "\n")
+      results$time_series$version <- as.character(ts_module$`__version__`)
     }, error = function(e) {
       cat("   Warning: Could not get version\n")
     })

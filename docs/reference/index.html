@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtabpfn</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with rtabpfn</a></li>
     <li><a class="dropdown-item" href="../articles/regression.html">Regression with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/classification.html">Classification with TabPFN</a></li>
+    <li><a class="dropdown-item" href="../articles/time-series-forecasting.html">Time Series Forecasting</a></li>
     <li><a class="dropdown-item" href="../articles/shap.html">SHAP Explanations with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/anomaly-detection.html">Anomaly Detection with TabPFN</a></li>
   </ul></li>
@@ -75,6 +76,13 @@
 
         </dt>
         <dd>Train a TabPFN Unsupervised Anomaly Detection Model</dd>
+
+        <dt>
+
+          <code><a href="tab_pfn_time_series.html">tab_pfn_time_series()</a></code>
+
+        </dt>
+        <dd>Train a TabPFN Time Series Forecasting Model</dd>
       </dl></div><div class="section level2">
       <h2 id="prediction">Prediction<a class="anchor" aria-label="anchor" href="#prediction"></a></h2>
 
@@ -98,6 +106,13 @@
 
         </dt>
         <dd>Predict method for TabPFN Unsupervised models</dd>
+
+        <dt>
+
+          <code><a href="predict.tab_pfn_time_series.html">predict(<i>&lt;tab_pfn_time_series&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Predict method for TabPFN Time Series models</dd>
       </dl></div><div class="section level2">
       <h2 id="model-interpretability">Model Interpretability<a class="anchor" aria-label="anchor" href="#model-interpretability"></a></h2>
 
@@ -173,6 +188,92 @@
         </dt>
         <dd>Calculate Anomaly/Outlier Scores</dd>
       </dl></div><div class="section level2">
+      <h2 id="time-series-forecasting">Time Series Forecasting<a class="anchor" aria-label="anchor" href="#time-series-forecasting"></a></h2>
+
+      <div class="section-desc"><p>Functions for time series forecasting</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="tab_pfn_time_series.html">tab_pfn_time_series()</a></code>
+
+        </dt>
+        <dd>Train a TabPFN Time Series Forecasting Model</dd>
+
+        <dt>
+
+          <code><a href="predict.tab_pfn_time_series.html">predict(<i>&lt;tab_pfn_time_series&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Predict method for TabPFN Time Series models</dd>
+
+        <dt>
+
+          <code><a href="check_time_series_available.html">check_time_series_available()</a></code>
+
+        </dt>
+        <dd>Check if TabPFN Time Series is available</dd>
+
+        <dt>
+
+          <code><a href="tab_pfn_ts.html">get_encoding.tab_pfn_ts()</a></code> <code><a href="tab_pfn_ts.html">tab_pfn_ts()</a></code> <code><a href="tab_pfn_ts.html">update(<i>&lt;tab_pfn_ts&gt;</i>)</a></code>
+
+        </dt>
+        <dd>TabPFN Time Series Model for tidymodels</dd>
+
+        <dt>
+
+          <code><a href="set_engine.tab_pfn_ts.html">set_engine.tab_pfn_ts()</a></code>
+
+        </dt>
+        <dd>Set the model engine for TabPFN Time Series</dd>
+
+        <dt>
+
+          <code><a href="set_mode.tab_pfn_ts.html">set_mode.tab_pfn_ts()</a></code>
+
+        </dt>
+        <dd>Set mode for TabPFN Time Series</dd>
+
+        <dt>
+
+          <code><a href="fit_tabpfn_ts.html">fit_tabpfn_ts()</a></code>
+
+        </dt>
+        <dd>Fit TabPFN Time Series model specification</dd>
+
+        <dt>
+
+          <code><a href="fit_xy.tab_pfn_ts.html">fit_xy.tab_pfn_ts()</a></code>
+
+        </dt>
+        <dd>Fit a TabPFN Time Series model with xy interface</dd>
+
+        <dt>
+
+          <code><a href="predict.tab_pfn_ts_fit.html">predict(<i>&lt;tab_pfn_ts_fit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Make predictions from a fitted TabPFN Time Series model</dd>
+
+        <dt>
+
+          <code><a href="print.tab_pfn_ts.html">print(<i>&lt;tab_pfn_ts&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for TabPFN Time Series model specification</dd>
+
+        <dt>
+
+          <code><a href="print.tab_pfn_ts_fit.html">print(<i>&lt;tab_pfn_ts_fit&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for fitted TabPFN Time Series model</dd>
+      </dl></div><div class="section level2">
       <h2 id="setup-and-configuration">Setup and Configuration<a class="anchor" aria-label="anchor" href="#setup-and-configuration"></a></h2>
 
       <div class="section-desc"><p>Functions for setting up the Python environment</p></div>
@@ -233,6 +334,13 @@
 
         <dt>
 
+          <code><a href="check_time_series_available.html">check_time_series_available()</a></code>
+
+        </dt>
+        <dd>Check if TabPFN Time Series is available</dd>
+
+        <dt>
+
           <code><a href="validate_tabpfn_env.html">validate_tabpfn_env()</a></code>
 
         </dt>
@@ -260,6 +368,13 @@
 
         </dt>
         <dd>Print method for TabPFN Unsupervised models</dd>
+
+        <dt>
+
+          <code><a href="print.tab_pfn_time_series.html">print(<i>&lt;tab_pfn_time_series&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for TabPFN Time Series models</dd>
 
         <dt>
 
@@ -304,6 +419,20 @@
 
         </dt>
         <dd>Set mode for TabPFN</dd>
+
+        <dt>
+
+          <code><a href="fit.tab_pfn.html">fit.tab_pfn()</a></code>
+
+        </dt>
+        <dd>Fit a TabPFN model</dd>
+
+        <dt>
+
+          <code><a href="fit_xy.tab_pfn.html">fit_xy.tab_pfn()</a></code>
+
+        </dt>
+        <dd>Fit a TabPFN model with xy interface</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

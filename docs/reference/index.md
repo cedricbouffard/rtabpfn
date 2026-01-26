@@ -10,6 +10,8 @@ Functions to train TabPFN models
   : Train a TabPFN regression model with enhanced predict options
 - [`tab_pfn_unsupervised()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn_unsupervised.md)
   : Train a TabPFN Unsupervised Anomaly Detection Model
+- [`tab_pfn_time_series()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn_time_series.md)
+  : Train a TabPFN Time Series Forecasting Model
 
 ## Prediction
 
@@ -19,6 +21,8 @@ Functions for making predictions
   : Predict method for TabPFN models
 - [`predict(`*`<tab_pfn_unsupervised>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/predict.tab_pfn_unsupervised.md)
   : Predict method for TabPFN Unsupervised models
+- [`predict(`*`<tab_pfn_time_series>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/predict.tab_pfn_time_series.md)
+  : Predict method for TabPFN Time Series models
 
 ## Model Interpretability
 
@@ -46,6 +50,35 @@ Functions for unsupervised anomaly detection
 - [`anomaly_scores()`](https://cedricbouffard.github.io/rtabpfn/reference/anomaly_scores.md)
   : Calculate Anomaly/Outlier Scores
 
+## Time Series Forecasting
+
+Functions for time series forecasting
+
+- [`tab_pfn_time_series()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn_time_series.md)
+  : Train a TabPFN Time Series Forecasting Model
+- [`predict(`*`<tab_pfn_time_series>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/predict.tab_pfn_time_series.md)
+  : Predict method for TabPFN Time Series models
+- [`check_time_series_available()`](https://cedricbouffard.github.io/rtabpfn/reference/check_time_series_available.md)
+  : Check if TabPFN Time Series is available
+- [`get_encoding.tab_pfn_ts()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn_ts.md)
+  [`tab_pfn_ts()`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn_ts.md)
+  [`update(`*`<tab_pfn_ts>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/tab_pfn_ts.md)
+  : TabPFN Time Series Model for tidymodels
+- [`set_engine.tab_pfn_ts()`](https://cedricbouffard.github.io/rtabpfn/reference/set_engine.tab_pfn_ts.md)
+  : Set the model engine for TabPFN Time Series
+- [`set_mode.tab_pfn_ts()`](https://cedricbouffard.github.io/rtabpfn/reference/set_mode.tab_pfn_ts.md)
+  : Set mode for TabPFN Time Series
+- [`fit.tab_pfn_ts()`](https://cedricbouffard.github.io/rtabpfn/reference/fit.tab_pfn_ts.md)
+  : Fit a TabPFN Time Series model
+- [`fit_xy.tab_pfn_ts()`](https://cedricbouffard.github.io/rtabpfn/reference/fit_xy.tab_pfn_ts.md)
+  : Fit a TabPFN Time Series model with xy interface
+- [`predict(`*`<tab_pfn_ts_fit>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/predict.tab_pfn_ts_fit.md)
+  : Make predictions from a fitted TabPFN Time Series model
+- [`print(`*`<tab_pfn_ts>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/print.tab_pfn_ts.md)
+  : Print method for TabPFN Time Series model specification
+- [`print(`*`<tab_pfn_ts_fit>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/print.tab_pfn_ts_fit.md)
+  : Print method for fitted TabPFN Time Series model
+
 ## Setup and Configuration
 
 Functions for setting up the Python environment
@@ -64,6 +97,8 @@ Functions for setting up the Python environment
   : Check if SHAP is available
 - [`check_unsupervised_available()`](https://cedricbouffard.github.io/rtabpfn/reference/check_unsupervised_available.md)
   : Check if Unsupervised Extension is available
+- [`check_time_series_available()`](https://cedricbouffard.github.io/rtabpfn/reference/check_time_series_available.md)
+  : Check if TabPFN Time Series is available
 - [`validate_tabpfn_env()`](https://cedricbouffard.github.io/rtabpfn/reference/validate_tabpfn_env.md)
   : Validate TabPFN Python Environment
 
@@ -75,6 +110,8 @@ Print methods for model objects
   : Print method for TabPFN model specification
 - [`print(`*`<tab_pfn_unsupervised>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/print.tab_pfn_unsupervised.md)
   : Print method for TabPFN Unsupervised models
+- [`print(`*`<tab_pfn_time_series>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/print.tab_pfn_time_series.md)
+  : Print method for TabPFN Time Series models
 - [`print(`*`<tab_pfn_fit>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/print.tab_pfn_fit.md)
   : Print method for fitted TabPFN model
 - [`print(`*`<shap_explanation>`*`)`](https://cedricbouffard.github.io/rtabpfn/reference/print.shap_explanation.md)

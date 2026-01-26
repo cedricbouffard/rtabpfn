@@ -23,4 +23,3 @@ A fitted model object
 \description{
 Fit a TabPFN model with xy interface
 }
-\keyword{internal}

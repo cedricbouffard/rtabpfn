@@ -21,7 +21,8 @@ Imports:
     tidyr (>= 1.0.0),
     dplyr (>= 1.0.0),
     parsnip (>= 1.0.0),
-    hardhat (>= 1.0.0)
+    hardhat (>= 1.0.0),
+    lubridate (>= 1.7.0)
 Suggests:
     ggplot2 (>= 3.0.0),
     testthat (>= 3.0.0),

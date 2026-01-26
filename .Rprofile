@@ -1,0 +1,1 @@
+options(pkgdown.internet = FALSE)

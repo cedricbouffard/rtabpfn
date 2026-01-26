@@ -5,17 +5,29 @@
 
 #' Get encoding for tab_pfn model
 #'
+#' @param object A model specification
 #' @return A tibble with encoding information
 #' @keywords internal
-get_encoding.tab_pfn <- function() {
+#' @export
+get_encoding.tab_pfn <- function(object) {
+  # Filter based on the mode of the model specification
+  if (!is.null(object$mode) && object$mode == "classification") {
+    mode_filter <- "classification"
+  } else if (!is.null(object$mode) && object$mode == "regression") {
+    mode_filter <- "regression"
+  } else {
+    # Return all if mode is unknown
+    mode_filter <- c("classification", "regression")
+  }
+
   tibble::tibble(
-    model = c("tab_pfn", "tab_pfn"),
-    engine = c("tabpfn", "tabpfn"),
-    mode = c("classification", "regression"),
-    predictor_indicators = c("none", "none"),
-    compute_intercept = c(FALSE, FALSE),
-    remove_intercept = c(FALSE, FALSE),
-    allow_sparse_x = c(FALSE, FALSE)
+    model = rep("tab_pfn", length(mode_filter)),
+    engine = rep("tabpfn", length(mode_filter)),
+    mode = mode_filter,
+    predictor_indicators = rep("none", length(mode_filter)),
+    compute_intercept = rep(FALSE, length(mode_filter)),
+    remove_intercept = rep(FALSE, length(mode_filter)),
+    allow_sparse_x = rep(FALSE, length(mode_filter))
   )
 }
 
@@ -67,7 +79,7 @@ tab_pfn <- function(
     args = args,
     eng_args = NULL,
     mode = mode,
-    method = "tab_pfn",
+    method = NULL,
     engine = engine
   )
   
@@ -189,7 +201,7 @@ required_pkgs.tab_pfn <- function(object, ...) {
 
 #' Fit a TabPFN model
 #'
-#' @param x A model specification
+#' @param object A model specification
 #' @param formula A formula specifying the model
 #' @param data A data frame
 #' @param control A `parsnip::control_fit()` object
@@ -197,8 +209,7 @@ required_pkgs.tab_pfn <- function(object, ...) {
 #'
 #' @return A fitted model object
 #' @export
-#' @keywords internal
-fit.tab_pfn <- function(x, formula = NULL, data = NULL, control = parsnip::control_fit(), ...) {
+fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::control_fit(), ...) {
   rtabpfn:::ensure_python_env()
 
   # Process the data using hardhat - support both formula and xy interfaces
@@ -214,7 +225,7 @@ fit.tab_pfn <- function(x, formula = NULL, data = NULL, control = parsnip::contr
   }
 
   # Get model arguments
-  args <- x$args
+  args <- object$args
 
   # Convert to simple vectors if needed
   N_ensemble_configurations <- rlang::eval_tidy(args$N_ensemble_configurations)
@@ -281,7 +292,6 @@ fit.tab_pfn <- function(x, formula = NULL, data = NULL, control = parsnip::contr
 #'
 #' @return A fitted model object
 #' @export
-#' @keywords internal
 fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) {
   rtabpfn:::ensure_python_env()
 

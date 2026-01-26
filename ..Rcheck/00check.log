@@ -1,0 +1,202 @@
+* using log directory 'C:/Users/cedbo/OneDrive/Documents/GitHub/rtabpfn/..Rcheck'
+* using R version 4.5.2 (2025-10-31 ucrt)
+* using platform: x86_64-w64-mingw32
+* R was compiled by
+    gcc.exe (GCC) 14.3.0
+    GNU Fortran (GCC) 14.3.0
+* running under: Windows 11 x64 (build 26200)
+* using session charset: UTF-8
+* using options '--no-examples --no-manual --no-vignettes --no-build-vignettes'
+* checking for file './DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'rtabpfn' version '0.1.0'
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .Rhistory
+  .cache/huggingface/.gitignore
+  .gitignore
+  docs/.nojekyll
+  docs/articles/.Rhistory
+  vignettes/.Rhistory
+  vignettes/.cache/huggingface/.gitignore
+  ..Rcheck
+  .Rproj.user
+  .cache
+  .git
+  .github
+  vignettes/.cache
+These were most likely included in error. See section 'Package
+structure' in the 'Writing R Extensions' manual.
+* checking for portable file names ... NOTE
+Found the following non-portable file paths:
+  rtabpfn/.Rproj.user/shared/notebooks/6D2893B6-time-series-forecasting/1/s/ccuysp8ys0rmt_t/execution.lock
+  rtabpfn/.Rproj.user/shared/notebooks/6D2893B6-time-series-forecasting/1/s/cpbain7y5522c/000010.metadata
+
+Tarballs are only required to store paths of up to 100 bytes and cannot
+store those of more than 256 bytes, with restrictions including to 100
+bytes for the final component.
+See section 'Package structure' in the 'Writing R Extensions' manual.
+* checking whether package 'rtabpfn' can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Pointeur de fichier licence incorrect : LICENSE
+Checking should be performed on sources prepared by 'R CMD build'.
+  Missing dependency on R >= 4.1.0 because package code uses the pipe
+  |> or function shorthand \(...) syntax added in R 4.1.0.
+  File(s) using such syntax:
+    'shap.R'
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... WARNING
+Found the following directories with names of check directories:
+  ./..Rcheck
+  ./rtabpfn.Rcheck
+Most likely, these were included erroneously.
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking whether startup messages can be suppressed ... NOTE
+Auto-detected TabPFN Python environment at: C:/Users/cedbo/OneDrive/Documents/.virtualenvs/tabpfn/Scripts/python.exe
+
+It looks like this package (or a package it requires) has a startup
+message which cannot be suppressed: see ?packageStartupMessage.
+* checking dependencies in R code ... NOTE
+importations '::' ou ':::' non déclarées depuis : 'rlang'
+Objets manquants ou non exportés :
+  'parsnip::control_fit' 'reticulate::py_initialize'
+There are ::: calls to the package's namespace in its code. A package
+  almost never needs to use ::: for its own objects:
+  'ensure_python_env'
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+Fichier 'rtabpfn/R/rtabpfn-package.R' :
+  appels .onLoad :
+    message("Auto-detected TabPFN Python environment at: ", best_path)
+    message("Auto-detected TabPFN Python environment at: ", any_path)
+    message("Note: tabpfn-time-series not found in this environment")
+    message("Install with: setup_tabpfn(install_time_series = TRUE)")
+
+Les fonctions de démarrage de package devraient utiliser
+  'packageStartupMessage' pour générer des messages.
+Voir section 'Good practice' dans '?.onAttach'.
+
+plot_shap_dependence: no visible binding for global variable
+  'feature_value'
+plot_shap_dependence: no visible binding for global variable
+  'shap_value'
+plot_shap_summary: no visible binding for global variable 'feature'
+plot_shap_summary: no visible binding for global variable 'shap_value'
+plot_shap_summary: no visible binding for global variable
+  'mean_abs_shap'
+plot_shap_summary: no visible global function definition for 'reorder'
+predict.tab_pfn_fit: no visible global function definition for
+  'predict'
+predict.tab_pfn_ts_fit: no visible global function definition for
+  'predict'
+required_pkgs.tab_pfn_fit: no visible global function definition for
+  'required_pkgs'
+required_pkgs.tab_pfn_ts_fit: no visible global function definition for
+  'required_pkgs'
+shap_values: no visible global function definition for 'head'
+Undefined global functions or variables:
+  feature feature_value head mean_abs_shap predict reorder
+  required_pkgs shap_value
+Consider adding
+  importFrom("stats", "predict", "reorder")
+  importFrom("utils", "head")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Objets code non documentés :
+  'required_pkgs.tab_pfn_fit' 'required_pkgs.tab_pfn_ts_fit'
+All user-level objects in a package should have documentation entries.
+See chapter 'Writing R documentation files' in the 'Writing R
+Extensions' manual.
+* checking for code/documentation mismatches ... WARNING
+Codoc mismatches from Rd file 'create_test_dataframe.Rd':
+create_test_dataframe
+  Code : function(train_df, prediction_length, date_col, value_col,
+                 item_id_col, tabpfn_mode = "client")
+  Docs : function(train_df, prediction_length, date_col, item_id_col)
+  Noms d'arguments dans le code mais pas dans la doc :
+    value_col tabpfn_mode
+  Incohérence dans le nom des arguments :
+    Position: 4 Code: value_col Docs: item_id_col
+
+Codoc mismatches from Rd file 'create_timeseries_dataframe.Rd':
+create_timeseries_dataframe
+  Code : function(df, date_col, value_col, item_id_col, tabpfn_mode =
+                 NULL)
+  Docs : function(df, date_col, value_col, item_id_col)
+  Noms d'arguments dans le code mais pas dans la doc :
+    tabpfn_mode
+
+Codoc mismatches from Rd file 'tab_pfn_time_series.Rd':
+tab_pfn_time_series
+  Code : function(train_df, prediction_length, quantiles = c(0.1, 0.5,
+                 0.9), date_col = NULL, value_col = NULL, item_id_col =
+                 NULL, tabpfn_mode = "local", tabpfn_output_selection =
+                 "median", features = NULL, verbose = TRUE)
+  Docs : function(train_df, prediction_length, quantiles = c(0.1, 0.5,
+                 0.9), date_col = NULL, value_col = NULL, item_id_col =
+                 NULL, tabpfn_mode = "client", tabpfn_output_selection
+                 = "median", features = NULL, verbose = TRUE)
+  Incohérence dans les valeurs par défaut des arguments :
+    Name: 'tabpfn_mode' Code: "local" Docs: "client"
+
+* checking Rd \usage sections ... WARNING
+Documented arguments not in \usage in Rd file 'required_pkgs.tab_pfn.Rd':
+  'x'
+
+Documented arguments not in \usage in Rd file 'required_pkgs.tab_pfn_ts.Rd':
+  'x'
+
+Documented arguments not in \usage in Rd file 'tab_pfn_time_series.Rd':
+  '...'
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter 'Writing R documentation files' in the 'Writing R
+Extensions' manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking LazyData ... INFO
+  'LazyData' is specified without a 'data' directory
+* checking files in 'vignettes' ... WARNING
+Files in the 'vignettes' directory but no files in 'inst/doc':
+  'anomaly-detection.Rmd' 'classification.Rmd' 'getting-started.Rmd'
+  'regression.Rmd' 'shap.Rmd' 'tabpfn-v2-regressor-2noar4o2.ckpt'
+  'time-series-forecasting.Rmd'
+* checking examples ... SKIPPED
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes ... WARNING
+Directory 'inst/doc' does not exist.
+Package vignettes without corresponding single PDF/HTML:
+  'anomaly-detection.Rmd'
+  'classification.Rmd'
+  'getting-started.Rmd'
+  'regression.Rmd'
+  'shap.Rmd'
+  'time-series-forecasting.Rmd'
+* checking running R code from vignettes ... SKIPPED
+* checking re-building of vignette outputs ... SKIPPED
+* DONE
+Status: 6 WARNINGs, 6 NOTEs

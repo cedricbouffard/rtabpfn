@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtabpfn</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with rtabpfn</a></li>
     <li><a class="dropdown-item" href="../articles/regression.html">Regression with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/classification.html">Classification with TabPFN</a></li>
+    <li><a class="dropdown-item" href="../articles/time-series-forecasting.html">Time Series Forecasting</a></li>
     <li><a class="dropdown-item" href="../articles/shap.html">SHAP Explanations with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/anomaly-detection.html">Anomaly Detection with TabPFN</a></li>
   </ul>
@@ -135,18 +136,18 @@ vehicles:</p>
 <pre><code><span><span class="co">## Computing anomaly scores...</span></span>
 <span><span class="co">##   Input data dimensions: 32 x 7 </span></span>
 <span><span class="co">##   Computing with 10 permutations...</span></span>
-<span><span class="co">##   Done! Score range: 0.2061268 - 59.67083</span></span></code></pre>
+<span><span class="co">##   Done! Score range: 0.1294842 - 17.21105</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">scores</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">##   observation anomaly_score</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> .obs_1              2.80 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> .obs_2              1.54 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">3</span> .obs_3              1.27 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">4</span> .obs_4              1.86 </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">5</span> .obs_5              0.312</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">6</span> .obs_6              1.83</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> .obs_1              2.48 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> .obs_2              1.58 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">3</span> .obs_3              1.00 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">4</span> .obs_4              1.09 </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">5</span> .obs_5              0.209</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">6</span> .obs_6              1.12</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="understanding-anomaly-scores">Understanding Anomaly Scores<a class="anchor" aria-label="anchor" href="#understanding-anomaly-scores"></a>
@@ -163,7 +164,7 @@ vehicles:</p>
 <span><span class="co"># Summary statistics</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">mtcars_with_scores</span><span class="op">$</span><span class="va">anomaly_score</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">##  0.2061  0.5412  1.7375  6.4449  5.2671 59.6708</span></span></code></pre>
+<span><span class="co">##  0.1295  0.3167  1.0465  3.2071  2.7084 17.2111</span></span></code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find most anomalous vehicles</span></span>
 <span><span class="va">most_anomalous</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -172,16 +173,16 @@ vehicles:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">most_anomalous</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"car_name"</span>, <span class="st">"anomaly_score"</span>, <span class="st">"mpg"</span>, <span class="st">"cyl"</span>, <span class="st">"hp"</span>, <span class="st">"wt"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                                car_name anomaly_score  mpg cyl  hp    wt</span></span>
-<span><span class="co">## AMC Javelin                 AMC Javelin     0.2061268 15.2   8 150 3.435</span></span>
-<span><span class="co">## Dodge Challenger       Dodge Challenger     0.2446634 15.5   8 150 3.520</span></span>
-<span><span class="co">## Merc 450SL                   Merc 450SL     0.2488258 17.3   8 180 3.730</span></span>
-<span><span class="co">## Hornet Sportabout     Hornet Sportabout     0.3119090 18.7   8 175 3.440</span></span>
-<span><span class="co">## Merc 450SLC                 Merc 450SLC     0.3575786 15.2   8 180 3.780</span></span>
-<span><span class="co">## Pontiac Firebird       Pontiac Firebird     0.3619120 19.2   8 175 3.845</span></span>
-<span><span class="co">## Lincoln Continental Lincoln Continental     0.4486681 10.4   8 215 5.424</span></span>
-<span><span class="co">## Cadillac Fleetwood   Cadillac Fleetwood     0.4926781 10.4   8 205 5.250</span></span>
-<span><span class="co">## Merc 450SE                   Merc 450SE     0.5573251 16.4   8 180 4.070</span></span>
-<span><span class="co">## Chrysler Imperial     Chrysler Imperial     0.6676782 14.7   8 230 5.345</span></span></code></pre>
+<span><span class="co">## AMC Javelin                 AMC Javelin     0.1294842 15.2   8 150 3.435</span></span>
+<span><span class="co">## Merc 450SL                   Merc 450SL     0.1336690 17.3   8 180 3.730</span></span>
+<span><span class="co">## Dodge Challenger       Dodge Challenger     0.1806957 15.5   8 150 3.520</span></span>
+<span><span class="co">## Merc 450SLC                 Merc 450SLC     0.1997143 15.2   8 180 3.780</span></span>
+<span><span class="co">## Hornet Sportabout     Hornet Sportabout     0.2090782 18.7   8 175 3.440</span></span>
+<span><span class="co">## Pontiac Firebird       Pontiac Firebird     0.2409273 19.2   8 175 3.845</span></span>
+<span><span class="co">## Lincoln Continental Lincoln Continental     0.2965089 10.4   8 215 5.424</span></span>
+<span><span class="co">## Merc 450SE                   Merc 450SE     0.2985653 16.4   8 180 4.070</span></span>
+<span><span class="co">## Cadillac Fleetwood   Cadillac Fleetwood     0.3227054 10.4   8 205 5.250</span></span>
+<span><span class="co">## Chrysler Imperial     Chrysler Imperial     0.4153944 14.7   8 230 5.345</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="visualizing-anomaly-scores">Visualizing Anomaly Scores<a class="anchor" aria-label="anchor" href="#visualizing-anomaly-scores"></a>
@@ -339,11 +340,11 @@ vehicles:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">threshold_comparison</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##     percentile threshold_score n_anomalies</span></span>
-<span><span class="co">## 95%       0.95       22.226374           2</span></span>
-<span><span class="co">## 90%       0.90       20.398697           4</span></span>
-<span><span class="co">## 85%       0.85       14.158347           5</span></span>
-<span><span class="co">## 80%       0.80        8.926723           7</span></span>
-<span><span class="co">## 75%       0.75        5.267123           8</span></span></code></pre>
+<span><span class="co">## 95%       0.95       14.506216           2</span></span>
+<span><span class="co">## 90%       0.90        9.773239           4</span></span>
+<span><span class="co">## 85%       0.85        7.913658           5</span></span>
+<span><span class="co">## 80%       0.80        5.128597           7</span></span>
+<span><span class="co">## 75%       0.75        2.708357           8</span></span></code></pre>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">threshold_comparison</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">percentile</span> <span class="op">*</span> <span class="fl">100</span>, y <span class="op">=</span> <span class="va">n_anomalies</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -384,8 +385,8 @@ vehicles:</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
 <span><span class="co">##   classification     n mean_mpg mean_hp mean_wt</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> Anomaly            4     22.0    180.    2.75</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> Normal            28     19.8    142     3.28</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> Anomaly            4     23.6    158.    2.59</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> Normal            28     19.6    145     3.31</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Visualize</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">mtcars_classified</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">classification</span>, y <span class="op">=</span> <span class="va">mpg</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -413,17 +414,17 @@ vehicles:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">top_anomalies</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"car_name"</span>, <span class="st">"anomaly_score"</span>, <span class="st">"mpg"</span>, <span class="st">"cyl"</span>, <span class="st">"disp"</span>, <span class="st">"hp"</span>, <span class="st">"wt"</span>, <span class="st">"qsec"</span>, <span class="st">"am"</span>, <span class="st">"gear"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                            car_name anomaly_score  mpg cyl  disp  hp    wt</span></span>
-<span><span class="co">## AMC Javelin             AMC Javelin     0.2061268 15.2   8 304.0 150 3.435</span></span>
-<span><span class="co">## Dodge Challenger   Dodge Challenger     0.2446634 15.5   8 318.0 150 3.520</span></span>
-<span><span class="co">## Merc 450SL               Merc 450SL     0.2488258 17.3   8 275.8 180 3.730</span></span>
-<span><span class="co">## Hornet Sportabout Hornet Sportabout     0.3119090 18.7   8 360.0 175 3.440</span></span>
-<span><span class="co">## Merc 450SLC             Merc 450SLC     0.3575786 15.2   8 275.8 180 3.780</span></span>
+<span><span class="co">## AMC Javelin             AMC Javelin     0.1294842 15.2   8 304.0 150 3.435</span></span>
+<span><span class="co">## Merc 450SL               Merc 450SL     0.1336690 17.3   8 275.8 180 3.730</span></span>
+<span><span class="co">## Dodge Challenger   Dodge Challenger     0.1806957 15.5   8 318.0 150 3.520</span></span>
+<span><span class="co">## Merc 450SLC             Merc 450SLC     0.1997143 15.2   8 275.8 180 3.780</span></span>
+<span><span class="co">## Hornet Sportabout Hornet Sportabout     0.2090782 18.7   8 360.0 175 3.440</span></span>
 <span><span class="co">##                    qsec am gear</span></span>
 <span><span class="co">## AMC Javelin       17.30  0    3</span></span>
-<span><span class="co">## Dodge Challenger  16.87  0    3</span></span>
 <span><span class="co">## Merc 450SL        17.60  0    3</span></span>
-<span><span class="co">## Hornet Sportabout 17.02  0    3</span></span>
-<span><span class="co">## Merc 450SLC       18.00  0    3</span></span></code></pre>
+<span><span class="co">## Dodge Challenger  16.87  0    3</span></span>
+<span><span class="co">## Merc 450SLC       18.00  0    3</span></span>
+<span><span class="co">## Hornet Sportabout 17.02  0    3</span></span></code></pre>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compare each anomaly to median values</span></span>
 <span><span class="va">median_values</span> <span class="op">&lt;-</span> <span class="va">mtcars_with_scores</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -458,10 +459,10 @@ vehicles:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">anomaly_deviation</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"car_name"</span>, <span class="st">"mpg_diff"</span>, <span class="st">"hp_diff"</span>, <span class="st">"wt_diff"</span>, <span class="st">"qsec_diff"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##                            car_name mpg_diff hp_diff wt_diff qsec_diff</span></span>
 <span><span class="co">## AMC Javelin             AMC Javelin     -4.0      27   0.110     -0.41</span></span>
-<span><span class="co">## Dodge Challenger   Dodge Challenger     -3.7      27   0.195     -0.84</span></span>
 <span><span class="co">## Merc 450SL               Merc 450SL     -1.9      57   0.405     -0.11</span></span>
-<span><span class="co">## Hornet Sportabout Hornet Sportabout     -0.5      52   0.115     -0.69</span></span>
-<span><span class="co">## Merc 450SLC             Merc 450SLC     -4.0      57   0.455      0.29</span></span></code></pre>
+<span><span class="co">## Dodge Challenger   Dodge Challenger     -3.7      27   0.195     -0.84</span></span>
+<span><span class="co">## Merc 450SLC             Merc 450SLC     -4.0      57   0.455      0.29</span></span>
+<span><span class="co">## Hornet Sportabout Hornet Sportabout     -0.5      52   0.115     -0.69</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="parallel-coordinates-plot">Parallel Coordinates Plot<a class="anchor" aria-label="anchor" href="#parallel-coordinates-plot"></a>
@@ -559,7 +560,7 @@ vehicles:</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
 <span><span class="co">##   is_anomaly_10pct     n mean_error median_error</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> FALSE                4      0.751        0.489</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> FALSE                4      0.709        0.405</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">2</span> TRUE                28      1.55         1.41</span></span></code></pre>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot</span></span>

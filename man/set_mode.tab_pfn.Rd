@@ -5,23 +5,17 @@
 \title{Set mode for TabPFN}
 \usage{
 set_mode.tab_pfn(object, mode, ...)
-
-set_mode.tab_pfn(object, mode, ...)
 }
 \arguments{
 \item{object}{A model specification}
 
-\item{mode}{A single character string for the prediction mode}
+\item{mode}{A single character string for prediction mode}
 
 \item{...}{Not used}
 }
 \value{
 An updated model specification
-
-An updated model specification
 }
 \description{
 Set mode for TabPFN
-
-Set the mode for TabPFN
 }

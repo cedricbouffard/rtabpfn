@@ -1,0 +1,46 @@
+anomaly                 Unsupervised Anomaly Detection for TabPFN
+anomaly_scores          Calculate Anomaly/Outlier Scores
+check_gpu_available     Check GPU Availability
+check_shap_available    Check if SHAP is available
+check_tabpfn            Check TabPFN Installation
+check_time_series_available
+                        Check if TabPFN Time Series is available
+check_torch_gpu         Check PyTorch GPU Status
+check_unsupervised_available
+                        Check if Unsupervised Extension is available
+explain_prediction      Explain Individual Prediction with SHAP
+plot_shap_dependence    Plot SHAP Dependence Plot
+plot_shap_summary       Plot SHAP Summary
+predict.tab_pfn         Predict method for TabPFN models
+predict.tab_pfn_time_series
+                        Predict method for TabPFN Time Series models
+predict.tab_pfn_unsupervised
+                        Predict method for TabPFN Unsupervised models
+print.shap_explanation
+                        Print method for SHAP explanation
+print.tab_pfn           Print method for TabPFN model specification
+print.tab_pfn_fit       Print method for fitted TabPFN model
+print.tab_pfn_time_series
+                        Print method for TabPFN Time Series models
+print.tab_pfn_ts        Print method for TabPFN Time Series model
+                        specification
+print.tab_pfn_ts_fit    Print method for fitted TabPFN Time Series
+                        model
+print.tab_pfn_unsupervised
+                        Print method for TabPFN Unsupervised models
+set_engine.tab_pfn      Set the model engine for TabPFN
+set_engine.tab_pfn_ts   Set the model engine for TabPFN Time Series
+set_mode.tab_pfn        Set mode for TabPFN
+set_mode.tab_pfn_ts     Set mode for TabPFN Time Series
+setup_tabpfn            Configure TabPFN Python Environment
+setup_torch             Setup PyTorch with GPU Support
+shap                    SHAP Values for TabPFN Models
+shap_values             Calculate SHAP Values for a TabPFN Model
+tab_pfn_classification
+                        Train a TabPFN classification model
+tab_pfn_regression      Train a TabPFN regression model with enhanced
+                        predict options
+tab_pfn_time_series     Train a TabPFN Time Series Forecasting Model
+tab_pfn_unsupervised    Train a TabPFN Unsupervised Anomaly Detection
+                        Model
+validate_tabpfn_env     Validate TabPFN Python Environment

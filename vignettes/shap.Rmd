@@ -19,9 +19,12 @@ First, ensure the Python environment is configured with tabpfn-extensions:
 library(rtabpfn)
 
 # Check if SHAP is available
-if (!check_shap_available()) {
-  stop("Please install tabpfn-extensions: reticulate::py_install('tabpfn-extensions[all]', pip = TRUE)")
+has_shap <- check_shap_available()
+if (!has_shap) {
+  message("Note: tabpfn-extensions[all] with SHAP not installed. Some examples will be skipped.")
+  message("Install with: reticulate::py_install('tabpfn-extensions[all]', pip = TRUE)")
 }
+knitr::opts_chunk$set(eval = has_shap)
 ```
 
 Load required packages:

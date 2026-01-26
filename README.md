@@ -1,7 +1,7 @@
 ```markdown
 # rtabpfn
 
-R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, and SHAP explanations.
+R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, SHAP explanations, and time series forecasting.
 
 ## Installation
 
@@ -26,6 +26,9 @@ setup_tabpfn(install_shap = TRUE)
 
 # For unsupervised anomaly detection, install tabpfn-extensions[unsupervised]
 setup_tabpfn(install_unsupervised = TRUE)
+
+# For time series forecasting, install tabpfn-time-series
+setup_tabpfn(install_time_series = TRUE)
 ```
 
 If you have a Python virtual environment elsewhere, specify the path:
@@ -159,6 +162,15 @@ tune_results <- tune_grid(
 show_best(tune_results, metric = "rmse")
 ```
 
+# Time series forecasting with tidymodels
+ts_spec <- tab_pfn_ts(mode = "regression") %>% 
+  set_engine("tabpfn_ts") %>% 
+  set_args(prediction_length = 12, quantiles = c(0.1, 0.5, 0.9))
+
+ts_fit <- fit(ts_spec, data = ts_data)
+forecasts <- predict(ts_fit, ts_data)
+```
+
 ### SHAP Explanations
 
 ```r
@@ -206,12 +218,35 @@ most_anomalous <- scores |>
 predictions <- predict(model, X, threshold = -50)
 ```
 
+### Time Series Forecasting
+
+```r
+library(rtabpfn)
+library(dplyr)
+library(lubridate)
+
+# Prepare time series data
+dates <- seq(as.Date("2020-01-01"), as.Date("2022-12-31"), by = "day")
+values <- sin(seq(0, 2*pi, length.out = length(dates))) * 10 + rnorm(length(dates), 0, 1)
+ts_data <- tibble(date = dates, value = values)
+
+# Train forecasting model
+model <- tab_pfn_time_series(ts_data, prediction_length = 30)
+
+# Generate forecasts
+forecasts <- predict(model, ts_data)
+
+# Get point forecasts and quantiles
+print(forecasts)
+```
+
 ## Features
 
 - **Quantile Predictions**: Get uncertainty estimates via quantile regression (supports decimal quantiles)
 - **Prediction Intervals**: Calculate confidence intervals for predictions
 - **SHAP Explanations**: Compute SHAP values for model interpretability
 - **Unsupervised Anomaly Detection**: Detect outliers using joint probability estimation
+- **Time Series Forecasting**: Zero-shot time series forecasting with probabilistic predictions
 - **Multiple Output Types**: Support for mean, median, mode, and full distribution
 - **Classification Support**: Both class labels and probabilities
 - **Tidyverse Compatible**: Returns tibbles with standard column names

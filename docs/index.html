@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>rtabpfn • rtabpfn</title>
+<title>TabPFN Interface • rtabpfn</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="rtabpfn">
-<meta name="description" content="An R interface to the TabPFN (Tabular Prior-Fitted Network) foundation model for tabular data">
-<meta property="og:description" content="An R interface to the TabPFN (Tabular Prior-Fitted Network) foundation model for tabular data">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="TabPFN Interface">
+<meta name="description" content="An R interface to the TabPFN (Tabular Prior-Fitted Network) foundation model for tabular data. Built on top of reticulate to interface with the Python TabPFN library.">
+<meta property="og:description" content="An R interface to the TabPFN (Tabular Prior-Fitted Network) foundation model for tabular data. Built on top of reticulate to interface with the Python TabPFN library.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rtabpfn</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting Started with rtabpfn</a></li>
     <li><a class="dropdown-item" href="articles/regression.html">Regression with TabPFN</a></li>
     <li><a class="dropdown-item" href="articles/classification.html">Classification with TabPFN</a></li>
+    <li><a class="dropdown-item" href="articles/time-series-forecasting.html">Time Series Forecasting</a></li>
     <li><a class="dropdown-item" href="articles/shap.html">SHAP Explanations with TabPFN</a></li>
     <li><a class="dropdown-item" href="articles/anomaly-detection.html">Anomaly Detection with TabPFN</a></li>
   </ul>
@@ -66,7 +67,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="sourceCode" id="cb1"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu"># rtabpfn</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, and SHAP explanations.</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, SHAP explanations, and time series forecasting.</span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">## Installation</span></span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
@@ -78,7 +79,7 @@
 </h2>
 <p>First, setup of Python environment:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">rtabpfn</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Auto-detect TabPFN venv in C:/venvs/tabpfn/ or create new one</span></span>
 <span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -87,7 +88,10 @@
 <span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span>install_shap <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># For unsupervised anomaly detection, install tabpfn-extensions[unsupervised]</span></span>
-<span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span>install_unsupervised <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span>install_unsupervised <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># For time series forecasting, install tabpfn-time-series</span></span>
+<span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span>install_time_series <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>If you have a Python virtual environment elsewhere, specify the path:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use existing virtual environment at custom location</span></span>
@@ -114,7 +118,7 @@
 <h3 id="regression-with-quantile-predictions">Regression with Quantile Predictions<a class="anchor" aria-label="anchor" href="#regression-with-quantile-predictions"></a>
 </h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">rtabpfn</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Prepare data</span></span>
 <span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cyl"</span>, <span class="st">"disp"</span>, <span class="st">"hp"</span>, <span class="st">"wt"</span><span class="op">)</span><span class="op">]</span></span>
@@ -155,7 +159,7 @@
 </h3>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">rtabpfn</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Classification with workflows</span></span>
 <span><span class="va">tab_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tab_pfn.html">tab_pfn</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
@@ -209,31 +213,36 @@
 <span></span>
 <span><span class="fu">show_best</span><span class="op">(</span><span class="va">tune_results</span>, metric <span class="op">=</span> <span class="st">"rmse"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="shap-explanations">SHAP Explanations<a class="anchor" aria-label="anchor" href="#shap-explanations"></a>
-</h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install tabpfn-extensions for SHAP support</span></span>
-<span><span class="co"># reticulate::py_install("tabpfn-extensions")</span></span>
-<span></span>
-<span><span class="co"># Check if SHAP is available</span></span>
-<span><span class="fu"><a href="reference/check_shap_available.html">check_shap_available</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Calculate SHAP values</span></span>
-<span><span class="va">shap_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shap_values.html">shap_values</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Plot SHAP summary</span></span>
-<span><span class="fu"><a href="reference/plot_shap_summary.html">plot_shap_summary</a></span><span class="op">(</span><span class="va">shap_vals</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Explain individual prediction</span></span>
-<span><span class="va">explanation</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/explain_prediction.html">explain_prediction</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span><span class="op">[</span><span class="fl">1</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">explanation</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level1">
+<div class="page-header"><h1 id="time-series-forecasting-with-tidymodels">Time series forecasting with tidymodels<a class="anchor" aria-label="anchor" href="#time-series-forecasting-with-tidymodels"></a>
+</h1></div>
+<p>ts_spec &lt;- tab_pfn_ts(mode = “regression”) %&gt;% set_engine(“tabpfn_ts”) %&gt;% set_args(prediction_length = 12, quantiles = c(0.1, 0.5, 0.9))</p>
+<p>ts_fit &lt;- fit(ts_spec, data = ts_data) forecasts &lt;- predict(ts_fit, ts_data)</p>
+<pre><code>
+### SHAP Explanations
+
+```r
+# Install tabpfn-extensions for SHAP support
+# reticulate::py_install("tabpfn-extensions")
+
+# Check if SHAP is available
+check_shap_available()
+
+# Calculate SHAP values
+shap_vals &lt;- shap_values(model, X)
+
+# Plot SHAP summary
+plot_shap_summary(shap_vals)
+
+# Explain individual prediction
+explanation &lt;- explain_prediction(model, X[1, , drop = FALSE])
+print(explanation)</code></pre>
 <div class="section level3">
 <h3 id="unsupervised-anomaly-detection">Unsupervised Anomaly Detection<a class="anchor" aria-label="anchor" href="#unsupervised-anomaly-detection"></a>
 </h3>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">rtabpfn</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Prepare data (no labels needed for unsupervised detection)</span></span>
@@ -256,6 +265,27 @@
 <span><span class="co"># Using predict with threshold for binary classification</span></span>
 <span><span class="va">predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span>, threshold <span class="op">=</span> <span class="op">-</span><span class="fl">50</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level3">
+<h3 id="time-series-forecasting">Time Series Forecasting<a class="anchor" aria-label="anchor" href="#time-series-forecasting"></a>
+</h3>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org" class="external-link">lubridate</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Prepare time series data</span></span>
+<span><span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2020-01-01"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2022-12-31"</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"day"</span><span class="op">)</span></span>
+<span><span class="va">values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span><span class="op">*</span><span class="va">pi</span>, length.out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fl">10</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">ts_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>date <span class="op">=</span> <span class="va">dates</span>, value <span class="op">=</span> <span class="va">values</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Train forecasting model</span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tab_pfn_time_series.html">tab_pfn_time_series</a></span><span class="op">(</span><span class="va">ts_data</span>, prediction_length <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Generate forecasts</span></span>
+<span><span class="va">forecasts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">ts_data</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get point forecasts and quantiles</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">forecasts</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
@@ -269,6 +299,8 @@
 <strong>SHAP Explanations</strong>: Compute SHAP values for model interpretability</li>
 <li>
 <strong>Unsupervised Anomaly Detection</strong>: Detect outliers using joint probability estimation</li>
+<li>
+<strong>Time Series Forecasting</strong>: Zero-shot time series forecasting with probabilistic predictions</li>
 <li>
 <strong>Multiple Output Types</strong>: Support for mean, median, mode, and full distribution</li>
 <li>
@@ -313,7 +345,7 @@
 <div class="section level3">
 <h3 id="custom-quantiles">Custom Quantiles<a class="anchor" aria-label="anchor" href="#custom-quantiles"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Specify custom quantiles (now supports decimals!)</span></span>
 <span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">new_data</span>,</span>
 <span>                 type <span class="op">=</span> <span class="st">"quantiles"</span>,</span>
@@ -322,7 +354,7 @@
 <div class="section level3">
 <h3 id="shap-values">SHAP Values<a class="anchor" aria-label="anchor" href="#shap-values"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate SHAP values for model interpretation</span></span>
 <span><span class="va">shap_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shap_values.html">shap_values</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">new_data</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -343,7 +375,7 @@
 <h3 id="shap-not-available">SHAP Not Available<a class="anchor" aria-label="anchor" href="#shap-not-available"></a>
 </h3>
 <p>If you get an error about <code>tabpfn_extensions</code> not being available:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check if SHAP is available</span></span>
 <span><span class="fu"><a href="reference/check_shap_available.html">check_shap_available</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -361,7 +393,7 @@
 <h3 id="unsupervised-extension-not-available">Unsupervised Extension Not Available<a class="anchor" aria-label="anchor" href="#unsupervised-extension-not-available"></a>
 </h3>
 <p>If you get an error about <code>tabpfn_extensions[unsupervised]</code> not being available:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check if unsupervised extension is available</span></span>
 <span><span class="fu"><a href="reference/check_unsupervised_available.html">check_unsupervised_available</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -379,7 +411,7 @@
 <h3 id="wrong-python-environment">Wrong Python Environment<a class="anchor" aria-label="anchor" href="#wrong-python-environment"></a>
 </h3>
 <p>If reticulate is using the wrong Python environment:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check current Python</span></span>
@@ -396,7 +428,7 @@
 <div class="section level3">
 <h3 id="different-output-types">Different Output Types<a class="anchor" aria-label="anchor" href="#different-output-types"></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Mean prediction (default)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">new_data</span>, output_type <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span>
 <span></span>
@@ -426,15 +458,13 @@
 </h2>
 <p>MIT ```</p>
 </div>
+</div>
 
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/cedricbouffard/rtabpfn/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/cedricbouffard/rtabpfn/issues" class="external-link">Report a bug</a></li>
-<li><a href="https://github.com/cedricbouffard/rtabpfn" class="external-link">GitHub</a></li>
-<li><a href="https://www.nature.com/articles/s41586-024-08328-6" class="external-link">TabPFN Paper</a></li>
-<li><a href="https://priorlabs.ai/" class="external-link">Prior Labs</a></li>
 </ul>
 </div>
 

@@ -3,18 +3,23 @@ url: https://cedricbouffard.github.io/rtabpfn/
 template:
   bootstrap: 5
   bootswatch: cosmo
- 
-home:
-  title: rtabpfn
-  description: An R interface to the TabPFN (Tabular Prior-Fitted Network) foundation model for tabular data
-  icon: fa-cogs
-  links:
-  - text: GitHub
-    href: https://github.com/cedricbouffard/rtabpfn
-  - text: TabPFN Paper
-    href: https://www.nature.com/articles/s41586-024-08328-6
-  - text: Prior Labs
-    href: https://priorlabs.ai/
+  
+development:
+  mode: auto
+
+  home:
+    title: rtabpfn
+    description: An R interface to the TabPFN (Tabular Prior-Fitted Network) foundation model for tabular data with time series forecasting, anomaly detection, and SHAP explanations
+    icon: fa-cogs
+    links:
+    - text: GitHub
+      href: https://github.com/cedricbouffard/rtabpfn
+    - text: TabPFN Paper
+      href: https://www.nature.com/articles/s41586-024-08328-6
+    - text: TabPFN-TS Paper
+      href: https://arxiv.org/abs/2501.02945
+    - text: Prior Labs
+      href: https://priorlabs.ai/
  
 reference:
   - title: Model Training
@@ -23,13 +28,15 @@ reference:
     - tab_pfn_classification
     - tab_pfn_regression
     - tab_pfn_unsupervised
- 
+    - tab_pfn_time_series
+  
   - title: Prediction
     desc: Functions for making predictions
     contents:
     - predict.tab_pfn
     - predict.tab_pfn_unsupervised
- 
+    - predict.tab_pfn_time_series
+  
   - title: Model Interpretability
     desc: Functions for SHAP-based model explanations
     contents:
@@ -39,13 +46,28 @@ reference:
     - plot_shap_dependence
     - explain_prediction
     - print.shap_explanation
- 
+  
   - title: Anomaly Detection
     desc: Functions for unsupervised anomaly detection
     contents:
     - anomaly
     - anomaly_scores
  
+  - title: Time Series Forecasting
+    desc: Functions for time series forecasting
+    contents:
+    - tab_pfn_time_series
+    - predict.tab_pfn_time_series
+    - check_time_series_available
+    - tab_pfn_ts
+    - set_engine.tab_pfn_ts
+    - set_mode.tab_pfn_ts
+    - fit_tabpfn_ts
+    - fit_xy.tab_pfn_ts
+    - predict.tab_pfn_ts_fit
+    - print.tab_pfn_ts
+    - print.tab_pfn_ts_fit
+  
   - title: Setup and Configuration
     desc: Functions for setting up the Python environment
     contents:
@@ -56,23 +78,27 @@ reference:
     - setup_torch
     - check_shap_available
     - check_unsupervised_available
+    - check_time_series_available
     - validate_tabpfn_env
- 
+  
   - title: Print Methods
     desc: Print methods for model objects
     contents:
     - print.tab_pfn
     - print.tab_pfn_unsupervised
+    - print.tab_pfn_time_series
     - print.tab_pfn_fit
     - print.shap_explanation
- 
+  
   - title: tidymodels Integration
     desc: parsnip model specification
     contents:
     - tab_pfn
     - set_engine.tab_pfn
     - set_mode.tab_pfn
- 
+    - fit.tab_pfn
+    - fit_xy.tab_pfn
+  
 articles:
   - title: Get Started
     navbar: ~
@@ -83,6 +109,7 @@ articles:
     contents:
     - regression
     - classification
+    - time-series-forecasting
   - title: Advanced Features
     navbar: ~
     contents:

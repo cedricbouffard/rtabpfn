@@ -9,7 +9,7 @@ virtual environment in C:/venvs/tabpfn/ by default. Detects and configures GPU s
 
     <a class="navbar-brand me-2" href="../index.html">rtabpfn</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,6 +23,7 @@ virtual environment in C:/venvs/tabpfn/ by default. Detects and configures GPU s
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting Started with rtabpfn</a></li>
     <li><a class="dropdown-item" href="../articles/regression.html">Regression with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/classification.html">Classification with TabPFN</a></li>
+    <li><a class="dropdown-item" href="../articles/time-series-forecasting.html">Time Series Forecasting</a></li>
     <li><a class="dropdown-item" href="../articles/shap.html">SHAP Explanations with TabPFN</a></li>
     <li><a class="dropdown-item" href="../articles/anomaly-detection.html">Anomaly Detection with TabPFN</a></li>
   </ul></li>
@@ -62,6 +63,7 @@ virtual environment in C:/venvs/tabpfn/ by default. Detects and configures GPU s
 <span>  force <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  install_shap <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  install_unsupervised <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  install_time_series <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  disable_analytics <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  setup_gpu <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  force_gpu <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -91,6 +93,10 @@ virtual environment in C:/venvs/tabpfn/ by default. Detects and configures GPU s
 
 <dt id="arg-install-unsupervised">install_unsupervised<a class="anchor" aria-label="anchor" href="#arg-install-unsupervised"></a></dt>
 <dd><p>Logical. If TRUE, installs tabpfn-extensions unsupervised module</p></dd>
+
+
+<dt id="arg-install-time-series">install_time_series<a class="anchor" aria-label="anchor" href="#arg-install-time-series"></a></dt>
+<dd><p>Logical. If TRUE, installs tabpfn-time-series for forecasting</p></dd>
 
 
 <dt id="arg-disable-analytics">disable_analytics<a class="anchor" aria-label="anchor" href="#arg-disable-analytics"></a></dt>

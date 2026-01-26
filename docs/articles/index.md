@@ -11,6 +11,8 @@
   TabPFN](https://cedricbouffard.github.io/rtabpfn/articles/regression.md):
 - [Classification with
   TabPFN](https://cedricbouffard.github.io/rtabpfn/articles/classification.md):
+- [Time Series
+  Forecasting](https://cedricbouffard.github.io/rtabpfn/articles/time-series-forecasting.md):
 
 ### Advanced Features
 
