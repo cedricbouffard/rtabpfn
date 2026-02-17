@@ -28,9 +28,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "pkgdown"), repos = "https://cloud.r-project.org")
-          remotes::install_deps(dependencies = TRUE, upgrade = "never")
-          remotes::install_cran("pkgdown")
+          Rscript -e 'install.packages(c("remotes", "pkgdown"), repos = "https://cloud.r-project.org")'
+          Rscript -e 'remotes::install_deps(dependencies = TRUE, upgrade = "never")'
+          Rscript -e 'remotes::install_cran("pkgdown")'
 
       - name: Build pkgdown site
         run: Rscript -e 'pkgdown::build_site()'
