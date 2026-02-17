@@ -31,7 +31,7 @@ test_that("quantile predictions work", {
   expect_s3_class(preds, "tbl_df")
   expect_equal(nrow(preds), nrow(X))
   expect_equal(ncol(preds), 3)
-  expect_true(all(c(".pred_q010", ".pred_q050", ".pred_q090") %in% names(preds)))
+  expect_true(all(c(".pred_q0.1", ".pred_q0.5", ".pred_q0.9") %in% names(preds)))
 })
 
 test_that("decimal quantile predictions work", {
@@ -50,8 +50,26 @@ test_that("decimal quantile predictions work", {
   expect_s3_class(preds, "tbl_df")
   expect_equal(nrow(preds), nrow(X))
   expect_equal(ncol(preds), 5)
-  expect_true(all(c(".pred_q002", ".pred_q025", ".pred_q050",
-                    ".pred_q075", ".pred_q097") %in% names(preds)))
+  expect_true(all(c(".pred_q0.025", ".pred_q0.25", ".pred_q0.5",
+                    ".pred_q0.75", ".pred_q0.975") %in% names(preds)))
+})
+
+test_that("single quantile prediction works", {
+  skip_if_not_installed("reticulate")
+  skip_if(!reticulate::py_module_available("tabpfn"))
+
+  X <- data.frame(x1 = 1:10, x2 = 11:20)
+  y <- 1:10
+
+  model <- tab_pfn_regression(X, y)
+
+  # Test single quantile prediction (passing a single float)
+  preds <- predict(model, X, type = "quantiles", quantiles = 0.5)
+
+  expect_s3_class(preds, "tbl_df")
+  expect_equal(nrow(preds), nrow(X))
+  expect_equal(ncol(preds), 1)
+  expect_true(".pred_q0.5" %in% names(preds))
 })
 
 test_that("classification predictions work", {

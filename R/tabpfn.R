@@ -30,7 +30,7 @@ predict.tab_pfn <- function(object,
     stop("Package 'reticulate' is required but not installed.")
   }
 
-  # Determine default type based on model mode
+      # Determine default type based on model mode
   if (is.null(type)) {
     type <- if (object$mode == "regression") "numeric" else "class"
   }
@@ -69,10 +69,15 @@ predict.tab_pfn <- function(object,
   if (object$mode == "regression") {
     if (type == "quantiles" || output_type == "quantiles") {
       # Quantile predictions
+      # Ensure quantiles is a vector (handle single numeric input)
+      quantiles_vec <- as.vector(quantiles)
+      # Convert to list for Python
+      quantiles_py <- as.list(quantiles_vec)
+      
       preds <- object$fit$predict(
         new_data,
         output_type = "quantiles",
-        quantiles = quantiles,
+        quantiles = quantiles_py,
         ...
       )
 
@@ -87,18 +92,24 @@ predict.tab_pfn <- function(object,
       } else if (is.matrix(preds_r)) {
         pred_matrix <- preds_r
       } else {
-        # Single array case
+        # Single array case (single quantile)
         pred_matrix <- as.matrix(preds_r)
       }
 
       # Ensure correct dimensions (rows = observations, cols = quantiles)
-      if (ncol(pred_matrix) != length(quantiles)) {
+      # Handle single quantile case where pred_matrix might be a vector
+      if (is.null(dim(pred_matrix))) {
+        pred_matrix <- as.matrix(pred_matrix)
+      }
+      if (ncol(pred_matrix) != length(quantiles_vec)) {
         pred_matrix <- t(pred_matrix)
       }
 
       # Convert to data frame with named columns
       pred_df <- as.data.frame(pred_matrix)
-      colnames(pred_df) <- paste0(".pred_q", sprintf("%03d", floor(quantiles * 100)))
+      # Generate column names using the actual quantile values passed by the user
+      col_names <- paste0(".pred_q", quantiles_vec)
+      colnames(pred_df) <- col_names
       return(tibble::as_tibble(pred_df))
 
     } else if (type == "conf_int") {

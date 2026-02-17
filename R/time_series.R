@@ -267,7 +267,7 @@ tab_pfn_time_series <- function(train_df,
 #'   - item_id (if multiple series)
 #'   - timestamp
 #'   - point forecast (mean/median based on model configuration)
-#'   - Quantile forecasts (e.g., .pred_q100, .pred_q500, .pred_q900)
+#'   - Quantile forecasts (e.g., .pred_q0.1, .pred_q0.5, .pred_q0.9, .pred_q0.975)
 #' @export
 #'
 #' @examples
