@@ -38,9 +38,12 @@ NULL
 #' @param mode A single character string for the prediction mode: "classification" or "regression"
 #' @param engine A single character string specifying the computational engine. For TabICL, this is always "tabicl"
 #' @param n_estimators Number of ensemble members (integer, default: 8)
+#' @param norm_methods Normalization methods to try (default: NULL)
+#' @param feat_shuffle_method Feature permutation strategy (default: "latin")
 #' @param batch_size Batch size for ensemble processing (integer, default: 8)
 #' @param device Device to use: "auto", "cpu", or "cuda"
 #' @param random_state Random seed for reproducibility
+#' @param verbose Print detailed information during inference (default: FALSE)
 #' @param ... Additional engine-specific arguments
 #'
 #' @return A model specification object
@@ -64,16 +67,22 @@ tab_icl <- function(
     mode = "unknown",
     engine = "tabicl",
     n_estimators = 8,
+    norm_methods = NULL,
+    feat_shuffle_method = "latin",
     batch_size = 8,
     device = "auto",
     random_state = 42,
+    verbose = FALSE,
     ...
 ) {
   args <- list(
     n_estimators = rlang::enquo(n_estimators),
+    norm_methods = rlang::enquo(norm_methods),
+    feat_shuffle_method = rlang::enquo(feat_shuffle_method),
     batch_size = rlang::enquo(batch_size),
     device = rlang::enquo(device),
     random_state = rlang::enquo(random_state),
+    verbose = rlang::enquo(verbose),
     ...
   )
 
@@ -237,9 +246,12 @@ fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::
 
   # Convert to simple vectors if needed
   n_estimators <- rlang::eval_tidy(args$n_estimators)
+  norm_methods <- rlang::eval_tidy(args$norm_methods)
+  feat_shuffle_method <- rlang::eval_tidy(args$feat_shuffle_method)
   batch_size <- rlang::eval_tidy(args$batch_size)
   device <- rlang::eval_tidy(args$device)
   random_state <- rlang::eval_tidy(args$random_state)
+  verbose <- rlang::eval_tidy(args$verbose)
 
   # Suppress PostHog analytics warnings
   old_do_not_track <- Sys.getenv("DO_NOT_TRACK")
@@ -253,8 +265,11 @@ fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::
         y = y_train,
         device = device,
         n_estimators = n_estimators,
+        norm_methods = norm_methods,
+        feat_shuffle_method = feat_shuffle_method,
         batch_size = batch_size,
-        random_state = random_state
+        random_state = random_state,
+        verbose = verbose
       )
 
       class(model) <- c("tab_icl")
@@ -266,8 +281,11 @@ fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::
         y = y_train,
         device = device,
         n_estimators = n_estimators,
+        norm_methods = norm_methods,
+        feat_shuffle_method = feat_shuffle_method,
         batch_size = batch_size,
-        random_state = random_state
+        random_state = random_state,
+        verbose = verbose
       )
 
       class(model) <- c("tab_icl")
@@ -315,9 +333,12 @@ fit_xy.tab_icl <- function(object, x, y, control = parsnip::control_fit(), ...) 
 
   # Convert to simple vectors if needed
   n_estimators <- rlang::eval_tidy(args$n_estimators)
+  norm_methods <- rlang::eval_tidy(args$norm_methods)
+  feat_shuffle_method <- rlang::eval_tidy(args$feat_shuffle_method)
   batch_size <- rlang::eval_tidy(args$batch_size)
   device <- rlang::eval_tidy(args$device)
   random_state <- rlang::eval_tidy(args$random_state)
+  verbose <- rlang::eval_tidy(args$verbose)
 
   # Convert x to data frame if needed
   x_train <- as.data.frame(x)
@@ -335,8 +356,11 @@ fit_xy.tab_icl <- function(object, x, y, control = parsnip::control_fit(), ...) 
         y = y_train,
         device = device,
         n_estimators = n_estimators,
+        norm_methods = norm_methods,
+        feat_shuffle_method = feat_shuffle_method,
         batch_size = batch_size,
-        random_state = random_state
+        random_state = random_state,
+        verbose = verbose
       )
 
       class(model) <- c("tab_icl")
@@ -348,8 +372,11 @@ fit_xy.tab_icl <- function(object, x, y, control = parsnip::control_fit(), ...) 
         y = y_train,
         device = device,
         n_estimators = n_estimators,
+        norm_methods = norm_methods,
+        feat_shuffle_method = feat_shuffle_method,
         batch_size = batch_size,
-        random_state = random_state
+        random_state = random_state,
+        verbose = verbose
       )
 
       class(model) <- c("tab_icl")

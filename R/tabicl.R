@@ -2,9 +2,10 @@
 #'
 #' @param object A fitted TabICL model object
 #' @param new_data A data frame of new predictors
-#' @param type Type of prediction. For regression: "numeric" (default), "raw".
-#'   For classification: "class", "prob", or "raw"
-#' @param output_type Python TabICL output type. Options: "mean" (default), "full"
+#' @param type Type of prediction. For regression: "numeric" (default), "quantiles",
+#'   "conf_int", or "raw". For classification: "class", "prob", or "raw"
+#' @param quantiles Numeric vector of quantiles to predict (used when type = "quantiles")
+#' @param level Confidence level for prediction intervals (used when type = "conf_int")
 #' @param ... Additional arguments passed to the Python predict method
 #'
 #' @return A tibble with predictions
@@ -12,7 +13,8 @@
 predict.tab_icl <- function(object,
                             new_data,
                             type = NULL,
-                            output_type = "mean",
+                            quantiles = c(0.1, 0.5, 0.9),
+                            level = 0.95,
                             ...) {
 
   rtabpfn:::ensure_python_env()
@@ -31,7 +33,7 @@ predict.tab_icl <- function(object,
   }
 
   # Validate type
-  valid_reg_types <- c("numeric", "raw")
+  valid_reg_types <- c("numeric", "quantiles", "conf_int", "raw")
   valid_cls_types <- c("class", "prob", "raw")
 
   if (object$mode == "regression" && !type %in% valid_reg_types) {
@@ -62,20 +64,91 @@ predict.tab_icl <- function(object,
 
   # Regression predictions
   if (object$mode == "regression") {
-    preds <- object$fit$predict(new_data, ...)
-
-    # Convert Python object to R
-    preds_r <- reticulate::py_to_r(preds)
-
-    # Handle different output types
-    if (is.matrix(preds_r)) {
-      pred_df <- as.data.frame(preds_r)
-      colnames(pred_df) <- paste0(".pred_sample_", seq_len(ncol(pred_df)))
+    if (type == "quantiles") {
+      # Quantile predictions using TabICL
+      quantiles_vec <- as.vector(quantiles)
+      
+      # TabICL predict with output_type="quantiles" and alphas parameter
+      preds <- object$fit$predict(
+        new_data, 
+        output_type = "quantiles", 
+        alphas = as.list(quantiles_vec)
+      )
+      
+      # Convert to R
+      preds_r <- reticulate::py_to_r(preds)
+      
+      # TabICL returns (n_samples, n_quantiles) array
+      if (is.matrix(preds_r)) {
+        pred_matrix <- preds_r
+      } else if (is.array(preds_r) && length(dim(preds_r)) == 2) {
+        pred_matrix <- as.matrix(preds_r)
+      } else {
+        # Try to convert to matrix
+        pred_matrix <- as.matrix(preds_r)
+      }
+      
+      # Ensure correct dimensions - should be (n_samples, n_quantiles)
+      if (ncol(pred_matrix) != length(quantiles_vec) && nrow(pred_matrix) == length(quantiles_vec)) {
+        pred_matrix <- t(pred_matrix)
+      }
+      
+      # Convert to data frame with named columns
+      pred_df <- as.data.frame(pred_matrix)
+      col_names <- paste0(".pred_q", quantiles_vec)
+      colnames(pred_df) <- col_names
       return(tibble::as_tibble(pred_df))
+      
+    } else if (type == "conf_int") {
+      # Prediction intervals using quantiles
+      lower_q <- (1 - level) / 2
+      upper_q <- 1 - lower_q
+      
+      # TabICL predict with output_type="quantiles" and alphas parameter
+      preds <- object$fit$predict(
+        new_data, 
+        output_type = "quantiles", 
+        alphas = list(lower_q, upper_q)
+      )
+      
+      # Convert to R
+      preds_r <- reticulate::py_to_r(preds)
+      
+      # Handle dimensions
+      if (is.matrix(preds_r)) {
+        pred_matrix <- preds_r
+      } else {
+        pred_matrix <- as.matrix(preds_r)
+      }
+      
+      # Ensure correct dimensions - should be (n_samples, 2)
+      if (ncol(pred_matrix) != 2 && nrow(pred_matrix) == 2) {
+        pred_matrix <- t(pred_matrix)
+      }
+      
+      pred_df <- data.frame(
+        .pred_lower = pred_matrix[, 1],
+        .pred_upper = pred_matrix[, 2]
+      )
+      return(tibble::as_tibble(pred_df))
+      
     } else {
-      # Mean prediction
-      preds_vec <- as.numeric(preds_r)
-      return(tibble::tibble(.pred = preds_vec))
+      # Point predictions (mean)
+      preds <- object$fit$predict(new_data, ...)
+      
+      # Convert Python object to R
+      preds_r <- reticulate::py_to_r(preds)
+      
+      # Handle different output types
+      if (is.matrix(preds_r)) {
+        pred_df <- as.data.frame(preds_r)
+        colnames(pred_df) <- paste0(".pred_sample_", seq_len(ncol(pred_df)))
+        return(tibble::as_tibble(pred_df))
+      } else {
+        # Mean prediction
+        preds_vec <- as.numeric(preds_r)
+        return(tibble::tibble(.pred = preds_vec))
+      }
     }
   }
 
@@ -138,16 +211,46 @@ resolve_tabicl_device <- function(device) {
 #'
 #' @param X Predictor data frame or matrix
 #' @param y Response vector
-#' @param device Device to use: "auto", "cpu", or "cuda"
-#' @param n_estimators Number of ensemble members (default: 8)
-#' @param batch_size Batch size for ensemble processing (default: 8)
-#' @param random_state Random seed for reproducibility
+#' @param n_estimators Number of ensemble members (default: 8). More = better but slower.
+#' @param norm_methods Normalization methods to try (default: NULL uses ["none", "power"]).
+#' @param feat_shuffle_method Feature permutation strategy (default: "latin").
+#' @param outlier_threshold Z-score threshold for outlier detection and clipping (default: 4.0).
+#' @param batch_size Batch size for ensemble processing (default: 8). Lower to save memory.
+#' @param model_path Path to checkpoint (default: NULL downloads from Hugging Face).
+#' @param allow_auto_download Auto-download checkpoint if not found locally (default: TRUE).
+#' @param checkpoint_version Pretrained checkpoint version (default: "tabicl-regressor-v2-20260212.ckpt").
+#' @param device Device to use: "auto", "cpu", or "cuda" (default: "auto").
+#' @param use_amp Automatic mixed precision for faster inference (default: "auto").
+#' @param use_fa3 Flash Attention 3 for Hopper GPUs (default: "auto").
+#' @param offload_mode Automatically decide when to use cpu/disk offloading (default: "auto").
+#' @param disk_offload_dir Directory for disk offloading (default: NULL).
+#' @param random_state Random seed for reproducibility (default: 42).
+#' @param n_jobs Number of PyTorch threads for CPU inference (default: NULL).
+#' @param verbose Print detailed information during inference (default: FALSE).
+#' @param inference_config Fine-grained inference control for advanced users (default: NULL).
 #' @param ... Additional arguments passed to TabICLRegressor
 #'
 #' @return A tab_icl model object with mode = "regression"
 #' @export
-tab_icl_regression <- function(X, y, device = "auto", n_estimators = 8,
-                                batch_size = 8, random_state = 42, ...) {
+tab_icl_regression <- function(X, y, 
+                                n_estimators = 8,
+                                norm_methods = NULL,
+                                feat_shuffle_method = "latin",
+                                outlier_threshold = 4.0,
+                                batch_size = 8,
+                                model_path = NULL,
+                                allow_auto_download = TRUE,
+                                checkpoint_version = "tabicl-regressor-v2-20260212.ckpt",
+                                device = "auto",
+                                use_amp = "auto",
+                                use_fa3 = "auto",
+                                offload_mode = "auto",
+                                disk_offload_dir = NULL,
+                                random_state = 42,
+                                n_jobs = NULL,
+                                verbose = FALSE,
+                                inference_config = NULL,
+                                ...) {
 
   rtabpfn:::ensure_python_env()
   
@@ -157,12 +260,25 @@ tab_icl_regression <- function(X, y, device = "auto", n_estimators = 8,
   # Load Python module
   tabicl <- reticulate::import("tabicl", convert = FALSE)
 
-  # Create regressor
+  # Create regressor with all parameters
   reg <- tabicl$TabICLRegressor(
-    device = resolved_device,
     n_estimators = as.integer(n_estimators),
+    norm_methods = norm_methods,
+    feat_shuffle_method = feat_shuffle_method,
+    outlier_threshold = outlier_threshold,
     batch_size = as.integer(batch_size),
+    model_path = model_path,
+    allow_auto_download = allow_auto_download,
+    checkpoint_version = checkpoint_version,
+    device = resolved_device,
+    use_amp = use_amp,
+    use_fa3 = use_fa3,
+    offload_mode = offload_mode,
+    disk_offload_dir = disk_offload_dir,
     random_state = as.integer(random_state),
+    n_jobs = n_jobs,
+    verbose = verbose,
+    inference_config = inference_config,
     ...
   )
 
@@ -188,16 +304,54 @@ tab_icl_regression <- function(X, y, device = "auto", n_estimators = 8,
 #'
 #' @param X Predictor data frame or matrix
 #' @param y Response vector (factor or character)
-#' @param device Device to use: "auto", "cpu", or "cuda"
-#' @param n_estimators Number of ensemble members (default: 8)
-#' @param batch_size Batch size for ensemble processing (default: 8)
-#' @param random_state Random seed for reproducibility
+#' @param n_estimators Number of ensemble members (default: 8). More = better but slower.
+#' @param norm_methods Normalization methods to try (default: NULL uses ["none", "power"]).
+#' @param feat_shuffle_method Feature permutation strategy (default: "latin").
+#' @param class_shuffle_method Class permutation strategy (default: "shift").
+#' @param outlier_threshold Z-score threshold for outlier detection and clipping (default: 4.0).
+#' @param softmax_temperature Temperature to control prediction confidence (default: 0.9).
+#' @param average_logits Average logits (TRUE) or probabilities (FALSE) (default: TRUE).
+#' @param support_many_classes Handle >10 classes automatically (default: TRUE).
+#' @param batch_size Batch size for ensemble processing (default: 8). Lower to save memory.
+#' @param model_path Path to checkpoint (default: NULL downloads from Hugging Face).
+#' @param allow_auto_download Auto-download checkpoint if not found locally (default: TRUE).
+#' @param checkpoint_version Pretrained checkpoint version (default: "tabicl-classifier-v2-20260212.ckpt").
+#' @param device Device to use: "auto", "cpu", or "cuda" (default: "auto").
+#' @param use_amp Automatic mixed precision for faster inference (default: "auto").
+#' @param use_fa3 Flash Attention 3 for Hopper GPUs (default: "auto").
+#' @param offload_mode Automatically decide when to use cpu/disk offloading (default: "auto").
+#' @param disk_offload_dir Directory for disk offloading (default: NULL).
+#' @param random_state Random seed for reproducibility (default: 42).
+#' @param n_jobs Number of PyTorch threads for CPU inference (default: NULL).
+#' @param verbose Print detailed information during inference (default: FALSE).
+#' @param inference_config Fine-grained inference control for advanced users (default: NULL).
 #' @param ... Additional arguments passed to TabICLClassifier
 #'
 #' @return A tab_icl model object with mode = "classification"
 #' @export
-tab_icl_classification <- function(X, y, device = "auto", n_estimators = 8,
-                                    batch_size = 8, random_state = 42, ...) {
+tab_icl_classification <- function(X, y, 
+                                    n_estimators = 8,
+                                    norm_methods = NULL,
+                                    feat_shuffle_method = "latin",
+                                    class_shuffle_method = "shift",
+                                    outlier_threshold = 4.0,
+                                    softmax_temperature = 0.9,
+                                    average_logits = TRUE,
+                                    support_many_classes = TRUE,
+                                    batch_size = 8,
+                                    model_path = NULL,
+                                    allow_auto_download = TRUE,
+                                    checkpoint_version = "tabicl-classifier-v2-20260212.ckpt",
+                                    device = "auto",
+                                    use_amp = "auto",
+                                    use_fa3 = "auto",
+                                    offload_mode = "auto",
+                                    disk_offload_dir = NULL,
+                                    random_state = 42,
+                                    n_jobs = NULL,
+                                    verbose = FALSE,
+                                    inference_config = NULL,
+                                    ...) {
 
   rtabpfn:::ensure_python_env()
   
@@ -207,12 +361,29 @@ tab_icl_classification <- function(X, y, device = "auto", n_estimators = 8,
   # Load Python module
   tabicl <- reticulate::import("tabicl", convert = FALSE)
 
-  # Create classifier
+  # Create classifier with all parameters
   clf <- tabicl$TabICLClassifier(
-    device = resolved_device,
     n_estimators = as.integer(n_estimators),
+    norm_methods = norm_methods,
+    feat_shuffle_method = feat_shuffle_method,
+    class_shuffle_method = class_shuffle_method,
+    outlier_threshold = outlier_threshold,
+    softmax_temperature = softmax_temperature,
+    average_logits = average_logits,
+    support_many_classes = support_many_classes,
     batch_size = as.integer(batch_size),
+    model_path = model_path,
+    allow_auto_download = allow_auto_download,
+    checkpoint_version = checkpoint_version,
+    device = resolved_device,
+    use_amp = use_amp,
+    use_fa3 = use_fa3,
+    offload_mode = offload_mode,
+    disk_offload_dir = disk_offload_dir,
     random_state = as.integer(random_state),
+    n_jobs = n_jobs,
+    verbose = verbose,
+    inference_config = inference_config,
     ...
   )
 

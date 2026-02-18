@@ -125,6 +125,13 @@ preds_reg <- predict(model_reg, X, type = "numeric")
 model_cls <- tab_icl_classification(X, y_cls, n_estimators = 8, device = "auto")
 preds_cls <- predict(model_cls, X, type = "class")
 preds_prob <- predict(model_cls, X, type = "prob")
+
+# TabICL with Quantile Predictions (similar to TabPFN)
+preds_quantiles <- predict(model_reg, X, type = "quantiles", 
+                           quantiles = c(0.025, 0.25, 0.5, 0.75, 0.975))
+
+# TabICL with Prediction Intervals
+preds_interval <- predict(model_reg, X, type = "conf_int", level = 0.95)
 ```
 
 ### Using with tidymodels
@@ -294,6 +301,8 @@ print(forecasts)
 
 TabICL supports similar prediction types:
 - `type = "numeric"`: Point predictions (regression)
+- `type = "quantiles"`: Quantile predictions for uncertainty (regression)
+- `type = "conf_int"`: Prediction/confidence intervals (regression)
 - `type = "class"`: Predicted class labels (classification)
 - `type = "prob"`: Class probabilities (classification)
 - `type = "raw"`: Raw Python object

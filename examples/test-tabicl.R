@@ -41,6 +41,17 @@ print(model_reg)
 preds_reg <- predict(model_reg, X_reg[81:100, ], type = "numeric")
 head(preds_reg)
 
+# Quantile predictions (new!)
+cat("\n--- Quantile Predictions ---\n")
+preds_quantiles <- predict(model_reg, X_reg[81:100, ], type = "quantiles", 
+                           quantiles = c(0.1, 0.5, 0.9))
+head(preds_quantiles)
+
+# Prediction intervals (new!)
+cat("\n--- Prediction Intervals ---\n")
+preds_interval <- predict(model_reg, X_reg[81:100, ], type = "conf_int", level = 0.95)
+head(preds_interval)
+
 # Classification
 model_cls <- tab_icl_classification(
   X = X_cls[1:80, ],
