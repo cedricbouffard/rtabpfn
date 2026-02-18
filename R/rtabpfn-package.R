@@ -55,6 +55,13 @@ ensure_python_env <- function() {
   parsnip::set_model_mode("tab_pfn_ts", "regression")
   parsnip::set_model_engine("tab_pfn_ts", "regression", "tabpfn_ts")
 
+  # Register TabICL model with parsnip
+  parsnip::set_new_model("tab_icl")
+  parsnip::set_model_mode("tab_icl", "classification")
+  parsnip::set_model_mode("tab_icl", "regression")
+  parsnip::set_model_engine("tab_icl", "classification", "tabicl")
+  parsnip::set_model_engine("tab_icl", "regression", "tabicl")
+
   # Restore saved Python path from R option
   saved_python_path <- getOption("rtabpfn.python_path")
   if (!is.null(saved_python_path) && file.exists(saved_python_path)) {

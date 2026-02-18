@@ -1,7 +1,7 @@
 ```markdown
 # rtabpfn
 
-R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, SHAP explanations, and time series forecasting.
+R interface to TabPFN (Tabular Prior-Fitted Network) and TabICL (Tabular In-Context Learning) with support for quantile predictions, prediction intervals, SHAP explanations, and time series forecasting.
 
 ## Installation
 
@@ -29,6 +29,9 @@ setup_tabpfn(install_unsupervised = TRUE)
 
 # For time series forecasting, install tabpfn-time-series
 setup_tabpfn(install_time_series = TRUE)
+
+# For TabICL (alternative tabular model)
+setup_tabicl()
 ```
 
 If you have a Python virtual environment elsewhere, specify the path:
@@ -101,6 +104,27 @@ preds_class <- predict(model, X, type = "class")
 
 # Get class probabilities
 preds_prob <- predict(model, X, type = "prob")
+```
+
+### TabICL (Tabular In-Context Learning)
+
+TabICL is a state-of-the-art tabular foundation model that uses in-context learning. It can be significantly faster than TabPFN on larger datasets.
+
+```r
+# Check if TabICL is available
+check_tabicl()
+
+# Install TabICL if needed
+# check_tabicl(install = TRUE)
+
+# TabICL Regression
+model_reg <- tab_icl_regression(X, y, n_estimators = 8, device = "auto")
+preds_reg <- predict(model_reg, X, type = "numeric")
+
+# TabICL Classification
+model_cls <- tab_icl_classification(X, y_cls, n_estimators = 8, device = "auto")
+preds_cls <- predict(model_cls, X, type = "class")
+preds_prob <- predict(model_cls, X, type = "prob")
 ```
 
 ### Using with tidymodels
@@ -264,6 +288,14 @@ print(forecasts)
 
 - `type = "class"`: Predicted class labels
 - `type = "prob"`: Class probabilities
+- `type = "raw"`: Raw Python object
+
+### TabICL
+
+TabICL supports similar prediction types:
+- `type = "numeric"`: Point predictions (regression)
+- `type = "class"`: Predicted class labels (classification)
+- `type = "prob"`: Class probabilities (classification)
 - `type = "raw"`: Raw Python object
 
 ## Advanced Usage
