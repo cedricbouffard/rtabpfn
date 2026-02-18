@@ -28,6 +28,16 @@ jobs:
       - name: Install pandoc
         uses: r-lib/actions/setup-pandoc@v2
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install tabpfn tabpfn-extensions tabpfn-time-series tabicl
+
       - name: Install R dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
