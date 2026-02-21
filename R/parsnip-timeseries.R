@@ -5,19 +5,24 @@
 
 #' Get encoding for tab_pfn_ts model
 #'
+#' @param object A model specification
 #' @return A tibble with encoding information
+#' @importFrom parsnip get_encoding
+#' @method get_encoding tab_pfn_ts
 #' @keywords internal
-get_encoding.tab_pfn_ts <- function() {
+#' @export
+get_encoding.tab_pfn_ts <- function(object) {
   tibble::tibble(
-    model = c("tab_pfn_ts"),
-    engine = c("tabpfn_ts"),
-    mode = c("regression"),
-    predictor_indicators = c("none"),
-    compute_intercept = c(FALSE),
-    remove_intercept = c(FALSE),
-    allow_sparse_x = c(FALSE)
+    model = "tab_pfn_ts",
+    engine = "tabpfn_ts",
+    mode = "regression",
+    predictor_indicators = "none",
+    compute_intercept = FALSE,
+    remove_intercept = FALSE,
+    allow_sparse_x = FALSE
   )
 }
+
 
 NULL
 
@@ -193,55 +198,54 @@ required_pkgs.tab_pfn_ts <- function(object, ...) {
   c("rtabpfn", "reticulate", "tibble", "lubridate")
 }
 
-#' Fit TabPFN Time Series model specification
+#' Fit a TabPFN Time Series model
 #'
-#' Wrapper function to fit tab_pfn_ts model specifications,
-#' working around tidymodels S3 dispatch conflicts.
+#' @param object A model specification
+#' @param formula A formula specifying the model (optional, columns auto-detected if NULL)
+#' @param data A data frame
+#' @param control A `parsnip::control_fit()` object
+#' @param ... Additional arguments
 #'
-#' @param model_spec A tab_pfn_ts model specification created by [tab_pfn_ts()]
-#' @param data A data frame containing the training data with date and value columns
-#' @param ... Additional arguments passed to the fitting function
-#'
-#' @return A fitted model object of class tab_pfn_ts_fit
+#' @return A fitted model object
+#' @importFrom generics fit
+#' @method fit tab_pfn_ts
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(rtabpfn)
-#' library(tidymodels)
-#'
-#' # Create time series data
-#' ts_data <- tibble(
-#'   date = seq(as.Date("2020-01-01"), by = "day", length.out = 100),
-#'   value = sin(1:100 * 0.1) + rnorm(100, 0, 0.1)
-#' )
-#'
-#' # Create model specification
-#' ts_spec <- tab_pfn_ts(mode = "regression") %>%
-#'   set_engine("tabpfn_ts") %>%
-#'   set_args(prediction_length = 10, quantiles = c(0.1, 0.5, 0.9))
-#'
-#' # Fit using the wrapper function (avoids tidymodels S3 dispatch issues)
-#' ts_fit <- fit_tabpfn_ts(ts_spec, data = ts_data)
-#' }
-fit_tabpfn_ts <- function(model_spec, data, ...) {
+fit.tab_pfn_ts <- function(object, formula = NULL, data = NULL, control = parsnip::control_fit(), ...) {
   rtabpfn:::ensure_python_env()
 
   if (is.null(data)) {
     stop("Training data 'data' is required for time series forecasting.")
   }
 
-  # Auto-detect columns
-  date_col <- rtabpfn:::find_date_column(data)
-  value_col <- rtabpfn:::find_value_column(data, date_col, NULL)
+  # Auto-detect columns or use formula if provided
+  if (!is.null(formula)) {
+    # If formula provided, we can try to extract date and value columns
+    # but for now let's prioritize auto-detection as per package design
+    # or handle formula properly
+    # For now, let's just use auto-detection if formula is NULL or try to extract from formula
+    # Simple formula handling: value ~ date
+    formula_vars <- all.vars(formula)
+    if (length(formula_vars) >= 2) {
+      value_col <- formula_vars[1]
+      date_col <- formula_vars[2]
+    } else {
+      date_col <- rtabpfn:::find_date_column(data)
+      value_col <- rtabpfn:::find_value_column(data, date_col, NULL)
+    }
+  } else {
+    date_col <- rtabpfn:::find_date_column(data)
+    value_col <- rtabpfn:::find_value_column(data, date_col, NULL)
+  }
 
-  args <- model_spec$args
+  args <- object$args
 
   prediction_length <- rlang::eval_tidy(args$prediction_length)
   quantiles <- rlang::eval_tidy(args$quantiles)
   tabpfn_output_selection <- rlang::eval_tidy(args$tabpfn_output_selection)
-  date_col <- rlang::eval_tidy(args$date_col)
-  value_col <- rlang::eval_tidy(args$value_col)
+  
+  # Override with args from object if they are set explicitly in set_args
+  if (!is.null(rlang::eval_tidy(args$date_col))) date_col <- rlang::eval_tidy(args$date_col)
+  if (!is.null(rlang::eval_tidy(args$value_col))) value_col <- rlang::eval_tidy(args$value_col)
   item_id_col <- rlang::eval_tidy(args$item_id_col)
 
   suppressWarnings(
@@ -260,21 +264,32 @@ fit_tabpfn_ts <- function(model_spec, data, ...) {
       verbose = FALSE
     )
 
-    class(model) <- c("tab_pfn_ts")
-
   }, error = function(e) {
     stop("Error fitting TabPFN Time Series model: ", e$message)
   })
 
   fit <- list(
     model = model,
-    spec = model_spec,
+    spec = object,
     preproc = NULL,
     elapsed = NA_real_
   )
   class(fit) <- c("tab_pfn_ts_fit", "model_fit")
   fit
 }
+
+#' Fit TabPFN Time Series model specification (Legacy wrapper)
+#'
+#' @param model_spec A tab_pfn_ts model specification created by [tab_pfn_ts()]
+#' @param data A data frame containing the training data with date and value columns
+#' @param ... Additional arguments passed to the fitting function
+#'
+#' @return A fitted model object of class tab_pfn_ts_fit
+#' @export
+fit_tabpfn_ts <- function(model_spec, data, ...) {
+  fit.tab_pfn_ts(object = model_spec, data = data, ...)
+}
+
 
 #' Fit a TabPFN Time Series model with xy interface
 #'
@@ -338,9 +353,12 @@ fit_xy.tab_pfn_ts <- function(object, x, y = NULL, control = parsnip::control_fi
 #' @param ... Additional arguments
 #'
 #' @return A tibble of forecasts
+#' @importFrom stats predict
+#' @method predict tab_pfn_ts_fit
 #' @export
 #' @keywords internal
 predict.tab_pfn_ts_fit <- function(object, new_data, type = NULL, ...) {
+
   rtabpfn:::ensure_python_env()
 
   spec <- object$spec

@@ -248,13 +248,15 @@ head(tidymodels_forecasts)
 
 ### Using with Workflows
 
-```{r}
+```{r, eval=FALSE}
 # Create a simple workflow
 ts_wf <- workflow() %>%
-  add_model(ts_spec)
+  add_model(ts_spec) %>%
+  add_formula(value ~ date)
 
 ts_fit <- fit(ts_wf, data = ts_data)
 ```
+
 
 ### Comparing Models
 

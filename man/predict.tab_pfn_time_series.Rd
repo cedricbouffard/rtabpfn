@@ -37,19 +37,3 @@ A tibble with forecasts containing:
 Generates forecasts for time series using the fitted TabPFN-TS model.
 Returns point forecasts and probabilistic quantile forecasts.
 }
-\examples{
-\dontrun{
-library(rtabpfn)
-library(dplyr)
-library(lubridate)
-
-# Train model
-dates <- seq(as.Date("2020-01-01"), as.Date("2022-12-31"), by = "day")
-values <- sin(seq(0, 2*pi, length.out = length(dates))) * 10 + rnorm(length(dates), 0, 1)
-ts_data <- tibble(date = dates, value = values)
-model <- tab_pfn_time_series(ts_data, prediction_length = 30)
-
-# Generate forecasts
-forecasts <- predict(model, ts_data)
-}
-}

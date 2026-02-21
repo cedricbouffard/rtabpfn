@@ -288,25 +288,12 @@ tab_pfn_time_series <- function(train_df,
 #'   - timestamp
 #'   - point forecast (mean/median based on model configuration)
 #'   - Quantile forecasts (e.g., .pred_q0.1, .pred_q0.5, .pred_q0.9, .pred_q0.975)
+#' @importFrom stats predict
+#' @method predict tab_pfn_time_series
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(rtabpfn)
-#' library(dplyr)
-#' library(lubridate)
-#'
-#' # Train model
-#' dates <- seq(as.Date("2020-01-01"), as.Date("2022-12-31"), by = "day")
-#' values <- sin(seq(0, 2*pi, length.out = length(dates))) * 10 + rnorm(length(dates), 0, 1)
-#' ts_data <- tibble(date = dates, value = values)
-#' model <- tab_pfn_time_series(ts_data, prediction_length = 30)
-#'
-#' # Generate forecasts
-#' forecasts <- predict(model, ts_data)
-#' }
 predict.tab_pfn_time_series <- function(object,
                                     new_data,
+
                                     prediction_length = NULL,
                                     quantiles = NULL,
                                     verbose = TRUE,

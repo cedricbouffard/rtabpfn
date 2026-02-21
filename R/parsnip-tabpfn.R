@@ -7,9 +7,12 @@
 #'
 #' @param object A model specification
 #' @return A tibble with encoding information
+#' @importFrom parsnip get_encoding
+#' @method get_encoding tab_pfn
 #' @keywords internal
 #' @export
 get_encoding.tab_pfn <- function(object) {
+
   # Filter based on the mode of the model specification
   if (!is.null(object$mode) && object$mode == "classification") {
     mode_filter <- "classification"
@@ -208,8 +211,11 @@ required_pkgs.tab_pfn <- function(object, ...) {
 #' @param ... Additional arguments
 #'
 #' @return A fitted model object
+#' @importFrom generics fit
+#' @method fit tab_pfn
 #' @export
 fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::control_fit(), ...) {
+
   rtabpfn:::ensure_python_env()
 
   # Process the data using hardhat - support both formula and xy interfaces
@@ -365,9 +371,12 @@ fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) 
 #' @param ... Additional arguments
 #'
 #' @return A tibble of predictions
+#' @importFrom stats predict
+#' @method predict tab_pfn_fit
 #' @export
 #' @keywords internal
 predict.tab_pfn_fit <- function(object, new_data, type = NULL, ...) {
+
   rtabpfn:::ensure_python_env()
 
   spec <- object$spec

@@ -62,6 +62,7 @@ reference:
     - tab_pfn_ts
     - set_engine.tab_pfn_ts
     - set_mode.tab_pfn_ts
+    - fit.tab_pfn_ts
     - fit_tabpfn_ts
     - fit_xy.tab_pfn_ts
     - predict.tab_pfn_ts_fit

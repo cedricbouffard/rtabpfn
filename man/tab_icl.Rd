@@ -6,7 +6,7 @@
 \alias{update.tab_icl}
 \title{TabICL Model for tidymodels}
 \usage{
-get_encoding.tab_icl(object)
+\method{get_encoding}{tab_icl}(object)
 
 tab_icl(
   mode = "unknown",

@@ -6,7 +6,7 @@
 \alias{update.tab_pfn_ts}
 \title{TabPFN Time Series Model for tidymodels}
 \usage{
-get_encoding.tab_pfn_ts()
+\method{get_encoding}{tab_pfn_ts}(object)
 
 tab_pfn_ts(
   mode = "regression",
@@ -34,6 +34,8 @@ tab_pfn_ts(
 )
 }
 \arguments{
+\item{object}{A model specification}
+
 \item{mode}{A single character string for the prediction mode. Only "regression" is supported for time series.}
 
 \item{engine}{A single character string specifying the computational engine. Always "tabpfn_ts" for time series.}

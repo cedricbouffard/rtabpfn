@@ -130,11 +130,44 @@ ensure_python_env <- function() {
   parsnip::set_model_mode("tab_pfn", "regression")
   parsnip::set_model_engine("tab_pfn", "classification", "tabpfn")
   parsnip::set_model_engine("tab_pfn", "regression", "tabpfn")
+  parsnip::set_encoding(
+    model = "tab_pfn",
+    eng = "tabpfn",
+    mode = "classification",
+    options = list(
+      predictor_indicators = "none",
+      compute_intercept = FALSE,
+      remove_intercept = FALSE,
+      allow_sparse_x = FALSE
+    )
+  )
+  parsnip::set_encoding(
+    model = "tab_pfn",
+    eng = "tabpfn",
+    mode = "regression",
+    options = list(
+      predictor_indicators = "none",
+      compute_intercept = FALSE,
+      remove_intercept = FALSE,
+      allow_sparse_x = FALSE
+    )
+  )
 
   # Register time series model with parsnip
   parsnip::set_new_model("tab_pfn_ts")
   parsnip::set_model_mode("tab_pfn_ts", "regression")
   parsnip::set_model_engine("tab_pfn_ts", "regression", "tabpfn_ts")
+  parsnip::set_encoding(
+    model = "tab_pfn_ts",
+    eng = "tabpfn_ts",
+    mode = "regression",
+    options = list(
+      predictor_indicators = "none",
+      compute_intercept = FALSE,
+      remove_intercept = FALSE,
+      allow_sparse_x = FALSE
+    )
+  )
 
   # Register TabICL model with parsnip
   parsnip::set_new_model("tab_icl")
@@ -142,6 +175,28 @@ ensure_python_env <- function() {
   parsnip::set_model_mode("tab_icl", "regression")
   parsnip::set_model_engine("tab_icl", "classification", "tabicl")
   parsnip::set_model_engine("tab_icl", "regression", "tabicl")
+  parsnip::set_encoding(
+    model = "tab_icl",
+    eng = "tabicl",
+    mode = "classification",
+    options = list(
+      predictor_indicators = "none",
+      compute_intercept = FALSE,
+      remove_intercept = FALSE,
+      allow_sparse_x = FALSE
+    )
+  )
+  parsnip::set_encoding(
+    model = "tab_icl",
+    eng = "tabicl",
+    mode = "regression",
+    options = list(
+      predictor_indicators = "none",
+      compute_intercept = FALSE,
+      remove_intercept = FALSE,
+      allow_sparse_x = FALSE
+    )
+  )
 
   # Restore saved Python path from R option
   saved_python_path <- getOption("rtabpfn.python_path")

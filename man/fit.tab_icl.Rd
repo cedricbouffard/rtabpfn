@@ -4,13 +4,7 @@
 \alias{fit.tab_icl}
 \title{Fit a TabICL model}
 \usage{
-fit.tab_icl(
-  object,
-  formula = NULL,
-  data = NULL,
-  control = parsnip::control_fit(),
-  ...
-)
+\method{fit}{tab_icl}(object, formula = NULL, data = NULL, control = parsnip::control_fit(), ...)
 }
 \arguments{
 \item{object}{A model specification}

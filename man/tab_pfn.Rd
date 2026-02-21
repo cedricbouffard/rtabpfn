@@ -6,7 +6,7 @@
 \alias{update.tab_pfn}
 \title{TabPFN Model for tidymodels}
 \usage{
-get_encoding.tab_pfn(object)
+\method{get_encoding}{tab_pfn}(object)
 
 tab_pfn(
   mode = "unknown",

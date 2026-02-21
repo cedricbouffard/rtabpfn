@@ -7,6 +7,8 @@
 #'
 #' @param object A model specification
 #' @return A tibble with encoding information
+#' @importFrom parsnip get_encoding
+#' @method get_encoding tab_icl
 #' @keywords internal
 #' @export
 get_encoding.tab_icl <- function(object) {
@@ -225,6 +227,8 @@ required_pkgs.tab_icl <- function(object, ...) {
 #' @param ... Additional arguments
 #'
 #' @return A fitted model object
+#' @importFrom generics fit
+#' @method fit tab_icl
 #' @export
 fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::control_fit(), ...) {
   rtabpfn:::ensure_python_env()
@@ -414,6 +418,8 @@ fit_xy.tab_icl <- function(object, x, y, control = parsnip::control_fit(), ...) 
 #' @param ... Additional arguments
 #'
 #' @return A tibble of predictions
+#' @importFrom stats predict
+#' @method predict tab_icl_fit
 #' @export
 #' @keywords internal
 predict.tab_icl_fit <- function(object, new_data, type = NULL, ...) {

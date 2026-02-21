@@ -4,13 +4,7 @@
 \alias{fit.tab_pfn}
 \title{Fit a TabPFN model}
 \usage{
-fit.tab_pfn(
-  object,
-  formula = NULL,
-  data = NULL,
-  control = parsnip::control_fit(),
-  ...
-)
+\method{fit}{tab_pfn}(object, formula = NULL, data = NULL, control = parsnip::control_fit(), ...)
 }
 \arguments{
 \item{object}{A model specification}

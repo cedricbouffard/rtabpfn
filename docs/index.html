@@ -67,7 +67,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="sourceCode" id="cb1"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu"># rtabpfn</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>R interface to TabPFN (Tabular Prior-Fitted Network) with support for quantile predictions, prediction intervals, SHAP explanations, and time series forecasting.</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>R interface to TabPFN (Tabular Prior-Fitted Network) and TabICL (Tabular In-Context Learning) with support for quantile predictions, prediction intervals, SHAP explanations, and time series forecasting.</span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">## Installation</span></span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
@@ -91,7 +91,10 @@
 <span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span>install_unsupervised <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># For time series forecasting, install tabpfn-time-series</span></span>
-<span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span>install_time_series <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/setup_tabpfn.html">setup_tabpfn</a></span><span class="op">(</span>install_time_series <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># For TabICL (alternative tabular model)</span></span>
+<span><span class="fu"><a href="reference/setup_tabicl.html">setup_tabicl</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>If you have a Python virtual environment elsewhere, specify the path:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use existing virtual environment at custom location</span></span>
@@ -155,9 +158,36 @@
 <span><span class="va">preds_prob</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
+<h3 id="tabicl-tabular-in-context-learning">TabICL (Tabular In-Context Learning)<a class="anchor" aria-label="anchor" href="#tabicl-tabular-in-context-learning"></a>
+</h3>
+<p>TabICL is a state-of-the-art tabular foundation model that uses in-context learning. It can be significantly faster than TabPFN on larger datasets.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Check if TabICL is available</span></span>
+<span><span class="fu"><a href="reference/check_tabicl.html">check_tabicl</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install TabICL if needed</span></span>
+<span><span class="co"># check_tabicl(install = TRUE)</span></span>
+<span></span>
+<span><span class="co"># TabICL Regression</span></span>
+<span><span class="va">model_reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tab_icl_regression.html">tab_icl_regression</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, n_estimators <span class="op">=</span> <span class="fl">8</span>, device <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
+<span><span class="va">preds_reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model_reg</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"numeric"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># TabICL Classification</span></span>
+<span><span class="va">model_cls</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tab_icl_classification.html">tab_icl_classification</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y_cls</span>, n_estimators <span class="op">=</span> <span class="fl">8</span>, device <span class="op">=</span> <span class="st">"auto"</span><span class="op">)</span></span>
+<span><span class="va">preds_cls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model_cls</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span></span>
+<span><span class="va">preds_prob</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model_cls</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># TabICL with Quantile Predictions (similar to TabPFN)</span></span>
+<span><span class="va">preds_quantiles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model_reg</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"quantiles"</span>, </span>
+<span>                           quantiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># TabICL with Prediction Intervals</span></span>
+<span><span class="va">preds_interval</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model_reg</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"conf_int"</span>, level <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
 <h3 id="using-with-tidymodels">Using with tidymodels<a class="anchor" aria-label="anchor" href="#using-with-tidymodels"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
 <span></span>
@@ -241,7 +271,7 @@ print(explanation)</code></pre>
 <div class="section level3">
 <h3 id="unsupervised-anomaly-detection">Unsupervised Anomaly Detection<a class="anchor" aria-label="anchor" href="#unsupervised-anomaly-detection"></a>
 </h3>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
@@ -268,7 +298,7 @@ print(explanation)</code></pre>
 <div class="section level3">
 <h3 id="time-series-forecasting">Time Series Forecasting<a class="anchor" aria-label="anchor" href="#time-series-forecasting"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cedricbouffard.github.io/rtabpfn/">rtabpfn</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org" class="external-link">lubridate</a></span><span class="op">)</span></span>
@@ -338,6 +368,11 @@ print(explanation)</code></pre>
 <code>type = "raw"</code>: Raw Python object</li>
 </ul>
 </div>
+<div class="section level3">
+<h3 id="tabicl">TabICL<a class="anchor" aria-label="anchor" href="#tabicl"></a>
+</h3>
+<p>TabICL supports similar prediction types: - <code>type = "numeric"</code>: Point predictions (regression) - <code>type = "quantiles"</code>: Quantile predictions for uncertainty (regression) - <code>type = "conf_int"</code>: Prediction/confidence intervals (regression) - <code>type = "class"</code>: Predicted class labels (classification) - <code>type = "prob"</code>: Class probabilities (classification) - <code>type = "raw"</code>: Raw Python object</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="advanced-usage">Advanced Usage<a class="anchor" aria-label="anchor" href="#advanced-usage"></a>
@@ -345,7 +380,7 @@ print(explanation)</code></pre>
 <div class="section level3">
 <h3 id="custom-quantiles">Custom Quantiles<a class="anchor" aria-label="anchor" href="#custom-quantiles"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Specify custom quantiles (now supports decimals!)</span></span>
 <span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">new_data</span>,</span>
 <span>                 type <span class="op">=</span> <span class="st">"quantiles"</span>,</span>
@@ -354,7 +389,7 @@ print(explanation)</code></pre>
 <div class="section level3">
 <h3 id="shap-values">SHAP Values<a class="anchor" aria-label="anchor" href="#shap-values"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate SHAP values for model interpretation</span></span>
 <span><span class="va">shap_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shap_values.html">shap_values</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">new_data</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -375,7 +410,7 @@ print(explanation)</code></pre>
 <h3 id="shap-not-available">SHAP Not Available<a class="anchor" aria-label="anchor" href="#shap-not-available"></a>
 </h3>
 <p>If you get an error about <code>tabpfn_extensions</code> not being available:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check if SHAP is available</span></span>
 <span><span class="fu"><a href="reference/check_shap_available.html">check_shap_available</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -393,7 +428,7 @@ print(explanation)</code></pre>
 <h3 id="unsupervised-extension-not-available">Unsupervised Extension Not Available<a class="anchor" aria-label="anchor" href="#unsupervised-extension-not-available"></a>
 </h3>
 <p>If you get an error about <code>tabpfn_extensions[unsupervised]</code> not being available:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check if unsupervised extension is available</span></span>
 <span><span class="fu"><a href="reference/check_unsupervised_available.html">check_unsupervised_available</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -411,7 +446,7 @@ print(explanation)</code></pre>
 <h3 id="wrong-python-environment">Wrong Python Environment<a class="anchor" aria-label="anchor" href="#wrong-python-environment"></a>
 </h3>
 <p>If reticulate is using the wrong Python environment:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check current Python</span></span>
@@ -428,7 +463,7 @@ print(explanation)</code></pre>
 <div class="section level3">
 <h3 id="different-output-types">Different Output Types<a class="anchor" aria-label="anchor" href="#different-output-types"></a>
 </h3>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Mean prediction (default)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">new_data</span>, output_type <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span></span>
 <span></span>

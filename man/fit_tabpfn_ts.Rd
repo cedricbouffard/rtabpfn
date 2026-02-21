@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsnip-timeseries.R
 \name{fit_tabpfn_ts}
 \alias{fit_tabpfn_ts}
-\title{Fit TabPFN Time Series model specification}
+\title{Fit TabPFN Time Series model specification (Legacy wrapper)}
 \usage{
 fit_tabpfn_ts(model_spec, data, ...)
 }
@@ -17,26 +17,5 @@ fit_tabpfn_ts(model_spec, data, ...)
 A fitted model object of class tab_pfn_ts_fit
 }
 \description{
-Wrapper function to fit tab_pfn_ts model specifications,
-working around tidymodels S3 dispatch conflicts.
-}
-\examples{
-\dontrun{
-library(rtabpfn)
-library(tidymodels)
-
-# Create time series data
-ts_data <- tibble(
-  date = seq(as.Date("2020-01-01"), by = "day", length.out = 100),
-  value = sin(1:100 * 0.1) + rnorm(100, 0, 0.1)
-)
-
-# Create model specification
-ts_spec <- tab_pfn_ts(mode = "regression") \%>\%
-  set_engine("tabpfn_ts") \%>\%
-  set_args(prediction_length = 10, quantiles = c(0.1, 0.5, 0.9))
-
-# Fit using the wrapper function (avoids tidymodels S3 dispatch issues)
-ts_fit <- fit_tabpfn_ts(ts_spec, data = ts_data)
-}
+Fit TabPFN Time Series model specification (Legacy wrapper)
 }
