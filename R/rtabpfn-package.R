@@ -6,6 +6,87 @@
 # Store the configured Python path as an R option
 .tabpfn_options <- new.env(parent = emptyenv())
 .tabpfn_options$python_path <- NULL
+.tabpfn_options$libpython_warned <- FALSE
+
+check_and_warn_libpython_mismatch <- function() {
+  if (.tabpfn_options$libpython_warned) {
+    return(invisible(NULL))
+  }
+
+  py_config <- tryCatch({
+    reticulate::py_config()
+  }, error = function(e) NULL)
+
+  if (is.null(py_config) || is.null(py_config$python)) {
+    return(invisible(NULL))
+  }
+
+  python_dir <- dirname(py_config$python)
+  libpython_dir <- if (!is.null(py_config$libpython) && py_config$libpython != "") {
+    dirname(py_config$libpython)
+  } else {
+    ""
+  }
+
+  is_venv <- grepl("\\.virtualenvs|virtualenvs|venvs", python_dir, ignore.case = TRUE)
+  libpython_is_conda <- grepl("conda|miniconda|anaconda", libpython_dir, ignore.case = TRUE)
+
+  if (is_venv && libpython_is_conda) {
+    warning(
+      "\n*** LIBPYTHON MISMATCH DETECTED ***\n",
+      "Python is from virtualenv but libpython points to conda:\n",
+      "  Python: ", py_config$python, "\n",
+      "  Libpython: ", py_config$libpython, "\n\n",
+      "This may cause errors when loading Python modules (torch, tabpfn, etc.)\n\n",
+      "SOLUTIONS:\n",
+      "1. Use conda environment:\n",
+      "   reticulate::use_condaenv('tabpfn', required = TRUE)\n",
+      "   setup_tabpfn()\n\n",
+      "2. Recreate virtualenv (avoiding conda Python):\n",
+      "   reticulate::virtualenv_remove('tabpfn')\n",
+      "   setup_tabpfn()\n\n",
+      "3. Run diagnose_python_env() for detailed diagnosis\n"
+    )
+    .tabpfn_options$libpython_warned <<- TRUE
+  }
+
+  invisible(NULL)
+}
+
+get_libpython_status <- function() {
+  py_config <- tryCatch({
+    reticulate::py_config()
+  }, error = function(e) NULL)
+
+  if (is.null(py_config) || is.null(py_config$python)) {
+    return(list(
+      status = "unknown",
+      python_path = NULL,
+      libpython_path = NULL,
+      is_mismatch = FALSE
+    ))
+  }
+
+  python_dir <- dirname(py_config$python)
+  libpython_dir <- if (!is.null(py_config$libpython) && py_config$libpython != "") {
+    dirname(py_config$libpython)
+  } else {
+    ""
+  }
+
+  is_venv <- grepl("\\.virtualenvs|virtualenvs|venvs", python_dir, ignore.case = TRUE)
+  libpython_is_conda <- grepl("conda|miniconda|anaconda", libpython_dir, ignore.case = TRUE)
+  is_mismatch <- is_venv && libpython_is_conda
+
+  list(
+    status = if (is_mismatch) "mismatch" else "ok",
+    python_path = py_config$python,
+    libpython_path = py_config$libpython,
+    python_dir = python_dir,
+    libpython_dir = libpython_dir,
+    is_mismatch = is_mismatch
+  )
+}
 
 # Function to ensure the correct Python environment is active
 ensure_python_env <- function() {
@@ -223,34 +304,65 @@ check_torch_gpu <- function() {
     cuda_available = FALSE,
     cuda_version = NULL,
     device_count = 0,
-    device_name = NULL
+    device_name = NULL,
+    error = NULL
   )
 
   tryCatch({
-    if (reticulate::py_module_available("torch")) {
-      torch <- reticulate::import("torch")
-      result$torch_available <- TRUE
-      result$cuda_available <- torch$cuda$is_available()
+    # First check if torch module is available
+    if (!reticulate::py_module_available("torch")) {
+      cat("PyTorch is not available in current Python environment.\n")
 
-      if (result$cuda_available) {
-        result$cuda_version <- torch$version$cuda
-        result$device_count <- torch$cuda$device_count()
-        if (result$device_count > 0) {
-          result$device_name <- as.character(torch$cuda$get_device_name(0L))
+      # Provide diagnostic info
+      py_config <- tryCatch({
+        reticulate::py_config()
+      }, error = function(e) NULL)
+
+      if (!is.null(py_config)) {
+        cat("  Python:", py_config$python, "\n")
+        if (!is.null(py_config$libpython) && py_config$libpython != "") {
+          cat("  Libpython:", py_config$libpython, "\n")
+
+          # Check for common mismatch
+          python_dir <- dirname(py_config$python)
+          libpython_dir <- dirname(py_config$libpython)
+          is_venv <- grepl("\\.virtualenvs|virtualenvs|venvs", python_dir, ignore.case = TRUE)
+          libpython_is_conda <- grepl("conda|miniconda|anaconda", libpython_dir, ignore.case = TRUE)
+
+          if (is_venv && libpython_is_conda) {
+            cat("\n*** Possible cause: libpython mismatch ***\n")
+            cat("Run diagnose_python_env() for details.\n")
+            result$error <- "libpython_mismatch"
+          }
         }
       }
+      return(invisible(result))
+    }
 
-      cat("PyTorch CUDA Available:", result$cuda_available, "\n")
-      if (result$cuda_available) {
-        cat("CUDA Version:", result$cuda_version, "\n")
-        cat("Device Count:", result$device_count, "\n")
-        if (!is.null(result$device_name)) {
-          cat("Device:", result$device_name, "\n")
-        }
+    # Try to import torch
+    torch <- reticulate::import("torch")
+    result$torch_available <- TRUE
+    result$cuda_available <- torch$cuda$is_available()
+
+    if (result$cuda_available) {
+      result$cuda_version <- torch$version$cuda
+      result$device_count <- torch$cuda$device_count()
+      if (result$device_count > 0) {
+        result$device_name <- as.character(torch$cuda$get_device_name(0L))
+      }
+    }
+
+    cat("PyTorch CUDA Available:", result$cuda_available, "\n")
+    if (result$cuda_available) {
+      cat("CUDA Version:", result$cuda_version, "\n")
+      cat("Device Count:", result$device_count, "\n")
+      if (!is.null(result$device_name)) {
+        cat("Device:", result$device_name, "\n")
       }
     }
   }, error = function(e) {
     warning("Error checking PyTorch GPU: ", e$message)
+    result$error <- e$message
   })
 
   invisible(result)
@@ -280,9 +392,19 @@ check_torch_gpu <- function() {
 setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NULL) {
   gpu_info <- check_gpu_available()
 
+  check_and_warn_libpython_mismatch()
+
   if (!gpu_info$nvidia && !gpu_info$apple_silicon && !force_gpu) {
     message("No GPU detected. Installing CPU-only PyTorch...")
     reticulate::py_install("torch", envname = envname, pip = TRUE)
+
+    # Verify torch installation
+    Sys.sleep(2)
+    torch_check <- check_torch_gpu()
+    if (!torch_check$torch_available && !is.null(torch_check$error)) {
+      warning("Torch installed but cannot be loaded. ", torch_check$error)
+      message("\nTry running diagnose_python_env() for troubleshooting.")
+    }
     return(invisible(NULL))
   }
 
@@ -340,6 +462,19 @@ setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NU
     message("Installing PyTorch with MPS support for Apple Silicon...")
     reticulate::py_install("torch", envname = envname, pip = TRUE)
     message("PyTorch for Apple Silicon installed successfully!")
+  }
+
+  # Final verification
+  Sys.sleep(1)
+  torch_status <- check_torch_gpu()
+
+  if (!torch_status$torch_available) {
+    if (!is.null(torch_status$error) && torch_status$error == "libpython_mismatch") {
+      message("\n*** Torch cannot be loaded due to libpython mismatch ***")
+      message("Run diagnose_python_env() for solutions")
+    } else {
+      message("\nWarning: Torch installed but cannot be loaded")
+    }
   }
 
   invisible(NULL)
@@ -455,6 +590,8 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
   if (disable_analytics) {
     Sys.setenv("DO_NOT_TRACK" = "1")
   }
+
+  check_and_warn_libpython_mismatch()
 
   # Auto-detect TabPFN venv in C:/venvs/ if python_path not specified
   if (is.null(python_path)) {
@@ -625,6 +762,143 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
 }
 
 
+#' Diagnose Python Environment Configuration
+#'
+#' @description
+#' Diagnoses potential issues with Python environment configuration,
+#' particularly libpython mismatches between virtualenv and conda.
+#'
+#' @return List with diagnostic information and recommendations
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' diagnose_python_env()
+#' }
+diagnose_python_env <- function() {
+  results <- list(
+    status = "unknown",
+    issues = character(),
+    recommendations = character(),
+    python_path = NULL,
+    libpython_path = NULL,
+    pythonhome = NULL
+  )
+
+  cat("=== Python Environment Diagnosis ===\n\n")
+
+  # Check Python configuration
+  py_config <- tryCatch({
+    reticulate::py_config()
+  }, error = function(e) {
+    cat("Error getting Python config:", e$message, "\n")
+    NULL
+  })
+
+  if (is.null(py_config)) {
+    results$status <- "error"
+    results$issues <- c(results$issues, "Cannot get Python configuration")
+    results$recommendations <- c(results$recommendations,
+      "Try restarting R session and running setup_tabpfn() again")
+    cat("\n", results$recommendations[1], "\n")
+    return(invisible(results))
+  }
+
+  results$python_path <- py_config$python
+  results$libpython_path <- py_config$libpython
+  results$pythonhome <- py_config$pythonhome
+
+  cat("Python path:", results$python_path, "\n")
+  cat("Libpython:", results$libpython_path, "\n")
+  cat("Pythonhome:", results$pythonhome, "\n\n")
+
+  # Detect libpython mismatch
+  python_dir <- dirname(results$python_path)
+  is_venv <- grepl("\\.virtualenvs|virtualenvs|venvs", python_dir, ignore.case = TRUE)
+  is_conda <- grepl("conda|miniconda|anaconda", python_dir, ignore.case = TRUE)
+
+  if (!is.null(results$libpython_path) && results$libpython_path != "") {
+    libpython_dir <- dirname(results$libpython_path)
+    libpython_is_conda <- grepl("conda|miniconda|anaconda", libpython_dir, ignore.case = TRUE)
+
+    # Check for mismatch
+    if (is_venv && libpython_is_conda) {
+      issue <- paste0("MISMATCH: Python is from virtualenv but libpython is from conda.\n",
+                      "  Python: ", results$python_path, "\n",
+                      "  Libpython: ", results$libpython_path)
+      results$issues <- c(results$issues, issue)
+
+      cat("*** ISSUE DETECTED ***\n")
+      cat("Python is from virtualenv but libpython points to conda!\n\n")
+
+      results$recommendations <- c(results$recommendations,
+        "SOLUTION 1: Use conda environment instead of virtualenv:",
+        "  reticulate::use_condaenv('tabpfn', required = TRUE)",
+        "  setup_tabpfn()",
+        "",
+        "SOLUTION 2: Create virtualenv with explicit Python (not conda):",
+        "  reticulate::virtualenv_remove('tabpfn')",
+        "  # Use Python from Python install, not miniconda",
+        "  reticulate::virtualenv_create('tabpfn', python = 'C:/path/to/python.exe')",
+        "  setup_tabpfn()",
+        "",
+        "SOLUTION 3: Set environment variable before R session:",
+        "  Sys.setenv(RETICULATE_PYTHON = 'C:/Users/.../.virtualenvs/tabpfn/Scripts/python.exe')",
+        "  # Then restart R and run setup_tabpfn()")
+
+      for (rec in results$recommendations) {
+        cat(rec, "\n")
+      }
+      results$status <- "mismatch"
+    } else if (is_conda && !libpython_is_conda) {
+      issue <- paste0("MISMATCH: Python is from conda but libpython is from elsewhere.\n",
+                      "  Python: ", results$python_path, "\n",
+                      "  Libpython: ", results$libpython_path)
+      results$issues <- c(results$issues, issue)
+      results$status <- "mismatch"
+    } else {
+      cat("Python and libpython appear to be from the same source.\n")
+      results$status <- "ok"
+    }
+  } else {
+    cat("Warning: libpython path is empty or NULL\n")
+    results$status <- "warning"
+  }
+
+  # Check if torch is available
+  cat("\n--- PyTorch Status ---\n")
+  has_torch <- reticulate::py_module_available("torch")
+  cat("PyTorch available:", has_torch, "\n")
+
+  if (has_torch) {
+    tryCatch({
+      torch <- reticulate::import("torch")
+      cat("PyTorch version:", torch$`__version__`, "\n")
+      cat("CUDA available:", torch$cuda$is_available(), "\n")
+    }, error = function(e) {
+      cat("Error checking torch:", e$message, "\n")
+    })
+  }
+
+  # Check RETICULATE_PYTHON env var
+  cat("\n--- Environment Variables ---\n")
+  reticulate_python <- Sys.getenv("RETICULATE_PYTHON")
+  if (reticulate_python != "") {
+    cat("RETICULATE_PYTHON:", reticulate_python, "\n")
+    cat("Note: This environment variable forces a specific Python.\n")
+    results$recommendations <- c(results$recommendations,
+      "To change Python, unset RETICULATE_PYTHON or restart R")
+  } else {
+    cat("RETICULATE_PYTHON: (not set)\n")
+  }
+
+  cat("\n=== Diagnosis Complete ===\n")
+  cat("Status:", results$status, "\n")
+
+  invisible(results)
+}
+
+
 #' Validate TabPFN Python Environment
 #'
 #' @description
@@ -649,15 +923,37 @@ validate_tabpfn_env <- function() {
 
   # Check Python configuration
   cat("1. Python Configuration:\n")
+  py_config <- NULL
   tryCatch({
     py_config <- reticulate::py_config()
     cat("   Python path:", py_config$python, "\n")
     cat("   Version:", py_config$version_string, "\n")
+    cat("   Libpython:", py_config$libpython, "\n")
     results$python <- list(available = TRUE, path = py_config$python, version = py_config$version_string)
   }, error = function(e) {
     cat("   Error: ", e$message, "\n")
     results$python <- list(available = FALSE, error = e$message)
   })
+
+  # Check for libpython mismatch
+  if (!is.null(py_config) && !is.null(py_config$libpython) && py_config$libpython != "") {
+    python_dir <- dirname(py_config$python)
+    libpython_dir <- dirname(py_config$libpython)
+    is_venv <- grepl("\\.virtualenvs|virtualenvs|venvs", python_dir, ignore.case = TRUE)
+    libpython_is_conda <- grepl("conda|miniconda|anaconda", libpython_dir, ignore.case = TRUE)
+
+    cat("\n   Libpython Check:")
+    if (is_venv && libpython_is_conda) {
+      cat(" *** MISMATCH DETECTED ***\n")
+      cat("   Python is from virtualenv but libpython is from conda!\n")
+      cat("   This may cause module loading errors.\n")
+      cat("   Run diagnose_python_env() for solutions.\n")
+      results$python$libpython_mismatch <- TRUE
+    } else {
+      cat(" OK (compatible)\n")
+      results$python$libpython_mismatch <- FALSE
+    }
+  }
 
   cat("\n")
 

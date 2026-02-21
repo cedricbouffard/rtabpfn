@@ -31,7 +31,7 @@ A tibble with forecasts containing:
   - item_id (if multiple series)
   - timestamp
   - point forecast (mean/median based on model configuration)
-  - Quantile forecasts (e.g., .pred_q100, .pred_q500, .pred_q900)
+  - Quantile forecasts (e.g., .pred_q0.1, .pred_q0.5, .pred_q0.9, .pred_q0.975)
 }
 \description{
 Generates forecasts for time series using the fitted TabPFN-TS model.

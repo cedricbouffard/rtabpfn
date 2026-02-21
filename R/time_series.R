@@ -11,19 +11,34 @@
 #' check_time_series_available()
 #' }
 check_time_series_available <- function() {
-  
+
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     return(FALSE)
   }
-  
+
   rtabpfn:::ensure_python_env()
-  
+
+  libpython_status <- rtabpfn:::get_libpython_status()
+
+  if (libpython_status$is_mismatch) {
+    warning(
+      "LIBPYTHON MISMATCH: ", libpython_status$python_path, " vs ", libpython_status$libpython_path,
+      "\nThis may cause module loading errors. Run diagnose_python_env() for solutions."
+    )
+  }
+
   has_ts <- reticulate::py_module_available("tabpfn_time_series")
-  
+
   if (!has_ts) {
     tryCatch({
       py_config <- reticulate::py_config()
       message("tabpfn-time-series not available in current Python environment: ", py_config$python)
+
+      if (libpython_status$is_mismatch) {
+        message("\n*** Possible cause: libpython mismatch ***")
+        message("Run diagnose_python_env() for solutions.")
+      }
+
       message("To install tabpfn-time-series:")
       message("  1. setup_tabpfn(install_time_series = TRUE)")
       message("  2. Or manually: pip install tabpfn-time-series")
@@ -33,7 +48,7 @@ check_time_series_available <- function() {
     })
     return(FALSE)
   }
-  
+
   tryCatch({
     ts_module <- reticulate::import("tabpfn_time_series", convert = FALSE)
     return(TRUE)
@@ -43,6 +58,11 @@ check_time_series_available <- function() {
       message("Error importing tabpfn_time_series module: ", e$message)
       message("Python: ", py_config$python)
       message("Version: ", py_config$version)
+
+      if (libpython_status$is_mismatch) {
+        message("\n*** Possible cause: libpython mismatch ***")
+        message("Run diagnose_python_env() for solutions.")
+      }
     }, error = function(e2) {
       message("Error importing tabpfn_time_series module: ", e$message)
     })

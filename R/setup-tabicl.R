@@ -22,6 +22,8 @@
 setup_tabicl <- function(envname = "tabpfn", install_if_missing = TRUE, ...) {
   rtabpfn:::ensure_python_env()
 
+  rtabpfn:::check_and_warn_libpython_mismatch()
+
   has_tabicl <- reticulate::py_module_available("tabicl")
 
   if (!has_tabicl && install_if_missing) {
@@ -61,10 +63,28 @@ validate_tabicl <- function() {
   results <- list(
     available = FALSE,
     version = NULL,
-    device = NULL
+    device = NULL,
+    libpython_mismatch = FALSE
   )
 
   cat("=== TabICL Validation ===\n\n")
+
+  cat("0. Python Environment:\n")
+  libpython_status <- rtabpfn:::get_libpython_status()
+
+  if (!is.null(libpython_status$python_path)) {
+    cat("   Python:", libpython_status$python_path, "\n")
+    cat("   Libpython:", libpython_status$libpython_path, "\n")
+
+    if (libpython_status$is_mismatch) {
+      cat("   *** LIBPYTHON MISMATCH DETECTED ***\n")
+      cat("   Run diagnose_python_env() for solutions.\n")
+      results$libpython_mismatch <- TRUE
+    } else {
+      cat("   Status: OK\n")
+    }
+  }
+  cat("\n")
 
   # Check if TabICL is available
   has_tabicl <- reticulate::py_module_available("tabicl")
