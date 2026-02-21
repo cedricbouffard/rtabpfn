@@ -36,12 +36,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir torch
-          pip install --no-cache-dir numpy pandas scikit-learn scipy
-          pip install --no-cache-dir tabpfn
-          pip install --no-cache-dir tabpfn-extensions
-          pip install --no-cache-dir tabpfn-time-series
-          pip install --no-cache-dir tabicl
+          pip install --no-cache-dir torch numpy pandas scikit-learn scipy
+          pip install tabpfn
 
       - name: Install R dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
