@@ -2,12 +2,9 @@
 % Please edit documentation in R/parsnip-tabpfn.R
 \name{tab_pfn}
 \alias{tab_pfn}
-\alias{get_encoding.tab_pfn}
 \alias{update.tab_pfn}
 \title{TabPFN Model for tidymodels}
 \usage{
-\method{get_encoding}{tab_pfn}(object)
-
 tab_pfn(
   mode = "unknown",
   engine = "tabpfn",
@@ -28,8 +25,6 @@ tab_pfn(
 )
 }
 \arguments{
-\item{object}{A model specification}
-
 \item{mode}{A single character string for the prediction mode: "classification" or "regression"}
 
 \item{engine}{A single character string specifying the computational engine. For TabPFN, this is always "tabpfn"}
@@ -43,14 +38,11 @@ tab_pfn(
 \item{...}{Additional engine-specific arguments}
 }
 \value{
-A tibble with encoding information
-
 A model specification object
 }
 \description{
 A TabPFN (Tabular Prior-Fitted Network) model that can be used
   with the tidymodels ecosystem (parsnip, workflows, tune, etc.)
-Get encoding for tab_pfn model
 }
 \examples{
 \dontrun{
@@ -67,4 +59,3 @@ tab_pfn_cls_spec <- tab_pfn(mode = "classification") \%>\%
   fit(Species ~ ., data = iris)
 }
 }
-\keyword{internal}

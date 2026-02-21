@@ -2,12 +2,9 @@
 % Please edit documentation in R/parsnip-timeseries.R
 \name{tab_pfn_ts}
 \alias{tab_pfn_ts}
-\alias{get_encoding.tab_pfn_ts}
 \alias{update.tab_pfn_ts}
 \title{TabPFN Time Series Model for tidymodels}
 \usage{
-\method{get_encoding}{tab_pfn_ts}(object)
-
 tab_pfn_ts(
   mode = "regression",
   engine = "tabpfn_ts",
@@ -34,8 +31,6 @@ tab_pfn_ts(
 )
 }
 \arguments{
-\item{object}{A model specification}
-
 \item{mode}{A single character string for the prediction mode. Only "regression" is supported for time series.}
 
 \item{engine}{A single character string specifying the computational engine. Always "tabpfn_ts" for time series.}
@@ -55,14 +50,11 @@ tab_pfn_ts(
 \item{...}{Additional engine-specific arguments}
 }
 \value{
-A tibble with encoding information
-
 A model specification object
 }
 \description{
 A TabPFN Time Series (TabPFN-TS) model for zero-shot forecasting
   with the tidymodels ecosystem (parsnip, workflows, tune, etc.)
-Get encoding for tab_pfn_ts model
 }
 \examples{
 \dontrun{
@@ -75,4 +67,3 @@ ts_spec <- tab_pfn_ts(mode = "regression") \%>\%
   set_args(prediction_length = 12, quantiles = c(0.1, 0.5, 0.9))
 }
 }
-\keyword{internal}

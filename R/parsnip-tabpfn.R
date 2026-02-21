@@ -3,38 +3,8 @@
 #' @description A TabPFN (Tabular Prior-Fitted Network) model that can be used
 #'   with the tidymodels ecosystem (parsnip, workflows, tune, etc.)
 
-#' Get encoding for tab_pfn model
-#'
-#' @param object A model specification
-#' @return A tibble with encoding information
-#' @importFrom parsnip get_encoding
-#' @method get_encoding tab_pfn
-#' @keywords internal
-#' @export
-get_encoding.tab_pfn <- function(object) {
-
-  # Filter based on the mode of the model specification
-  if (!is.null(object$mode) && object$mode == "classification") {
-    mode_filter <- "classification"
-  } else if (!is.null(object$mode) && object$mode == "regression") {
-    mode_filter <- "regression"
-  } else {
-    # Return all if mode is unknown
-    mode_filter <- c("classification", "regression")
-  }
-
-  tibble::tibble(
-    model = rep("tab_pfn", length(mode_filter)),
-    engine = rep("tabpfn", length(mode_filter)),
-    mode = mode_filter,
-    predictor_indicators = rep("none", length(mode_filter)),
-    compute_intercept = rep(FALSE, length(mode_filter)),
-    remove_intercept = rep(FALSE, length(mode_filter)),
-    allow_sparse_x = rep(FALSE, length(mode_filter))
-  )
-}
-
 NULL
+
 
 #' TabPFN model specification
 #'

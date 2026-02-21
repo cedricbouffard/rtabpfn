@@ -2,12 +2,9 @@
 % Please edit documentation in R/parsnip-tabicl.R
 \name{tab_icl}
 \alias{tab_icl}
-\alias{get_encoding.tab_icl}
 \alias{update.tab_icl}
 \title{TabICL Model for tidymodels}
 \usage{
-\method{get_encoding}{tab_icl}(object)
-
 tab_icl(
   mode = "unknown",
   engine = "tabicl",
@@ -33,8 +30,6 @@ tab_icl(
 )
 }
 \arguments{
-\item{object}{A model specification}
-
 \item{mode}{A single character string for the prediction mode: "classification" or "regression"}
 
 \item{engine}{A single character string specifying the computational engine. For TabICL, this is always "tabicl"}
@@ -56,14 +51,11 @@ tab_icl(
 \item{...}{Additional engine-specific arguments}
 }
 \value{
-A tibble with encoding information
-
 A model specification object
 }
 \description{
 A TabICL (Tabular In-Context Learning) model that can be used
   with the tidymodels ecosystem (parsnip, workflows, tune, etc.)
-Get encoding for tab_icl model
 }
 \examples{
 \dontrun{
@@ -80,4 +72,3 @@ tab_icl_cls_spec <- tab_icl(mode = "classification") \%>\%
   fit(Species ~ ., data = iris)
 }
 }
-\keyword{internal}

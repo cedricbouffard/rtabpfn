@@ -3,28 +3,8 @@
 #' @description A TabPFN Time Series (TabPFN-TS) model for zero-shot forecasting
 #'   with the tidymodels ecosystem (parsnip, workflows, tune, etc.)
 
-#' Get encoding for tab_pfn_ts model
-#'
-#' @param object A model specification
-#' @return A tibble with encoding information
-#' @importFrom parsnip get_encoding
-#' @method get_encoding tab_pfn_ts
-#' @keywords internal
-#' @export
-get_encoding.tab_pfn_ts <- function(object) {
-  tibble::tibble(
-    model = "tab_pfn_ts",
-    engine = "tabpfn_ts",
-    mode = "regression",
-    predictor_indicators = "none",
-    compute_intercept = FALSE,
-    remove_intercept = FALSE,
-    allow_sparse_x = FALSE
-  )
-}
-
-
 NULL
+
 
 #' TabPFN Time Series model specification
 #'
@@ -329,8 +309,6 @@ fit_xy.tab_pfn_ts <- function(object, x, y = NULL, control = parsnip::control_fi
       verbose = FALSE
     )
 
-    class(model) <- c("tab_pfn_ts")
-
   }, error = function(e) {
     stop("Error fitting TabPFN Time Series model: ", e$message)
   })
@@ -344,6 +322,7 @@ fit_xy.tab_pfn_ts <- function(object, x, y = NULL, control = parsnip::control_fi
   class(fit) <- c("tab_pfn_ts_fit", "model_fit")
   fit
 }
+
 
 #' Make predictions from a fitted TabPFN Time Series model
 #'
