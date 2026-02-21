@@ -80,6 +80,25 @@ reference:
     - check_unsupervised_available
     - check_time_series_available
     - validate_tabpfn_env
+    - diagnose_python_env
+
+  - title: TabICL
+    desc: TabICL model for in-context learning
+    contents:
+    - tab_icl
+    - tab_icl_classification
+    - tab_icl_regression
+    - predict.tab_icl
+    - predict.tab_icl_fit
+    - fit.tab_icl
+    - fit_xy.tab_icl
+    - print.tab_icl
+    - print.tab_icl_fit
+    - set_engine.tab_icl
+    - set_mode.tab_icl
+    - setup_tabicl
+    - check_tabicl
+    - validate_tabicl
   
   - title: Print Methods
     desc: Print methods for model objects
