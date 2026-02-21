@@ -28,12 +28,22 @@ tabpfn-extensions:
 library(rtabpfn)
 
 # Check if unsupervised extension is available
-has_unsupervised <- check_unsupervised_available()
+has_unsupervised <- tryCatch({
+  check_unsupervised_available()
+}, error = function(e) {
+  message("Note: Error checking unsupervised availability: ", e$message)
+  FALSE
+})
+
 if (!has_unsupervised) {
   message("Note: tabpfn-extensions[unsupervised] not installed. Some examples will be skipped.")
   message("Install with: reticulate::py_install('tabpfn-extensions[unsupervised]', pip = TRUE)")
 }
-knitr::opts_chunk$set(eval = has_unsupervised)
+# Don't skip all evaluation - let at least some code run
+# But set eval=FALSE if extension not available
+if (!has_unsupervised) {
+  knitr::opts_chunk$set(eval = FALSE)
+}
 ```
 
 Load required packages:
