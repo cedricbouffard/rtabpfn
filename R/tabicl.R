@@ -69,6 +69,7 @@ predict.tab_icl <- function(object,
       quantiles_vec <- as.vector(quantiles)
       
       # TabICL predict with output_type="quantiles" and alphas parameter
+      # The predict method handles the ensemble averaging internally
       preds <- object$fit$predict(
         new_data, 
         output_type = "quantiles", 
