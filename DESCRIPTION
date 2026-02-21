@@ -26,6 +26,8 @@ Imports:
     generics
 Suggests:
     ggplot2 (>= 3.0.0),
+    tidymodels (>= 1.0.0),
+    purrr (>= 1.0.0),
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,

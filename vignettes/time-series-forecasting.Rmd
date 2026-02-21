@@ -25,6 +25,16 @@ if (!has_ts) {
   message("Note: tabpfn-time-series not installed. Some examples will be skipped.")
 }
 
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+
+# Check for tidymodels
+has_tidymodels <- requireNamespace("tidymodels", quietly = TRUE)
+if (has_tidymodels) {
+  library(tidymodels)
+}
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -32,12 +42,8 @@ knitr::opts_chunk$set(
   fig.height = 5,
   warning = FALSE,
   message = FALSE,
-  eval = has_ts
+  eval = has_ts && has_tidymodels
 )
-library(dplyr)
-library(lubridate)
-library(ggplot2)
-library(tidymodels)
 ```
 
 ## Introduction
