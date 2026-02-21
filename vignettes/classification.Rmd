@@ -17,7 +17,21 @@ First, ensure the Python environment is configured:
 
 ```{r setup, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
-rtabpfn:::setup_tabpfn()
+
+# Check if TabPFN is available
+has_tabpfn <- tryCatch({
+  setup_tabpfn()
+  check_tabpfn()
+}, error = function(e) {
+  message("Note: Error checking TabPFN availability: ", e$message)
+  FALSE
+})
+
+if (!has_tabpfn) {
+  message("Note: TabPFN Python environment not configured. Some examples will be skipped.")
+}
+
+knitr::opts_chunk$set(eval = has_tabpfn)
 ```
 
 Load required packages:
@@ -32,7 +46,7 @@ library(tidyr)
 
 Let's use the classic `iris` dataset to classify flower species:
 
-```{r classification-basic, eval=TRUE, message=FALSE, warning=FALSE}
+```{r classification-basic, message=FALSE, warning=FALSE}
 # Load data
 data(iris)
 
@@ -53,7 +67,7 @@ head(class_preds)
 
 TabPFN can provide class probabilities, offering insight into prediction confidence:
 
-```{r classification-probs, eval=TRUE, message=FALSE, warning=FALSE}
+```{r classification-probs, message=FALSE, warning=FALSE}
 # Get class probabilities
 prob_preds <- predict(model, X, type = "prob")
 
@@ -62,7 +76,7 @@ head(prob_preds)
 
 ## Model Evaluation
 
-```{r evaluation, eval=TRUE, message=FALSE, warning=FALSE}
+```{r evaluation, message=FALSE, warning=FALSE}
 # Calculate accuracy
 accuracy <- mean(class_preds$.pred_class == y)
 cat("Model Accuracy:", round(accuracy, 4), "\n")
@@ -76,7 +90,7 @@ print(conf_matrix)
 
 ### Confusion Matrix Heatmap
 
-```{r plot-confusion, eval=TRUE, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
+```{r plot-confusion, message=FALSE, warning=FALSE, fig.width=5, fig.height=5}
 # Create confusion matrix for plotting
 conf_df <- as.data.frame(as.table(conf_matrix))
 names(conf_df) <- c("Actual", "Predicted", "Count")
@@ -95,7 +109,7 @@ ggplot(conf_df, aes(x = Predicted, y = Actual, fill = Count)) +
 
 ### Class Probabilities
 
-```{r plot-probabilities, eval=TRUE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
+```{r plot-probabilities, message=FALSE, warning=FALSE, fig.width=8, fig.height=4}
 # Add actual class to probabilities
 prob_df <- prob_preds %>%
   mutate(actual_class = y)
@@ -126,7 +140,7 @@ ggplot(prob_correct, aes(x = probability, fill = correct)) +
 
 ### Feature Space Visualization
 
-```{r plot-feature-space, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+```{r plot-feature-space, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
 # Plot first two features with predictions
 feature_df <- data.frame(
   Sepal.Length = iris$Sepal.Length,
@@ -152,7 +166,7 @@ ggplot(feature_df, aes(x = Sepal.Length, y = Sepal.Width)) +
 
 ### Confidence Scores
 
-```{r plot-confidence, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+```{r plot-confidence, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
 # Calculate confidence (max probability)
 prob_df$max_prob <- pmax(prob_df$.pred_setosa, 
                          prob_df$.pred_versicolor, 
@@ -175,7 +189,7 @@ ggplot(prob_df, aes(x = max_prob, fill = is_correct)) +
 
 TabPFN handles multi-class problems natively:
 
-```{r multiclass, eval=TRUE, message=FALSE, warning=FALSE}
+```{r multiclass, message=FALSE, warning=FALSE}
 # Print class information
 cat("Number of classes:", length(unique(y)), "\n")
 cat("Classes:", paste(unique(y), collapse = ", "), "\n")
@@ -195,7 +209,7 @@ print(class_stats)
 
 ### Probability Comparison by Class
 
-```{r plot-prob-comparison, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+```{r plot-prob-comparison, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
 # Mean probabilities for each actual class
 prob_mean <- prob_preds %>%
   mutate(actual = as.character(y)) %>%
@@ -257,7 +271,7 @@ print(metrics)
 
 ## Handling Binary Classification
 
-```{r binary-classification, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+```{r binary-classification, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
 # Create binary classification problem
 iris_binary <- iris %>%
   filter(Species != "setosa") %>%

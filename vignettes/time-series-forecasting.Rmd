@@ -10,6 +10,21 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
+library(rtabpfn)
+
+# Check if TabPFN Time Series is available
+has_ts <- tryCatch({
+  setup_tabpfn()
+  check_time_series_available()
+}, error = function(e) {
+  message("Note: Error checking TabPFN Time Series availability: ", e$message)
+  FALSE
+})
+
+if (!has_ts) {
+  message("Note: tabpfn-time-series not installed. Some examples will be skipped.")
+}
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -17,9 +32,8 @@ knitr::opts_chunk$set(
   fig.height = 5,
   warning = FALSE,
   message = FALSE,
-  eval = FALSE
+  eval = has_ts
 )
-library(rtabpfn)
 library(dplyr)
 library(lubridate)
 library(ggplot2)
@@ -57,7 +71,7 @@ check_time_series_available()
 
 For a single time series, provide a data frame with a date column and a value column:
 
-```{r, eval=TRUE}
+```{r}
 # Create sample time series data
 dates <- seq(as.Date("2020-01-01"), as.Date("2020-12-31"), by = "day")
 trend <- seq(0, 10, length.out = length(dates))
@@ -75,7 +89,7 @@ head(ts_data)
 
 Train the forecasting model and generate predictions:
 
-```{r, eval=TRUE}
+```{r}
 # Train forecasting model (using client mode by default)
 model <- tab_pfn_time_series(
   train_df = ts_data,
@@ -150,7 +164,7 @@ ggplot() +
 
 For forecasting multiple time series, include an `item_id` column:
 
-```{r, eval=TRUE}
+```{r}
 # Create multiple time series
 set.seed(123)
 dates <- seq(as.Date("2020-01-01"), as.Date("2022-12-31"), by = "day")
@@ -183,7 +197,7 @@ head(forecasts_multi)
 
 TabPFN-TS provides native support for probabilistic forecasting through quantile predictions. This is essential for risk assessment and decision-making under uncertainty.
 
-```{r, eval=TRUE}
+```{r}
 # Request multiple quantiles for probabilistic forecasts
 model_quantiles <- tab_pfn_time_series(
   train_df = ts_data,
@@ -213,7 +227,7 @@ The time series forecasting functionality is fully integrated with the tidymodel
 
 ### Basic Tidymodels Workflow
 
-```{r, eval=TRUE}
+```{r}
 # Create model specification
 ts_spec <- tab_pfn_ts(mode = "regression") %>%
   set_engine("tabpfn_ts") %>%
@@ -234,7 +248,7 @@ head(tidymodels_forecasts)
 
 ### Using with Workflows
 
-```{r, eval=TRUE}
+```{r}
 # Create a simple workflow
 ts_wf <- workflow() %>%
   add_model(ts_spec)
@@ -244,7 +258,7 @@ ts_fit <- fit(ts_wf, data = ts_data)
 
 ### Comparing Models
 
-```{r, eval=TRUE}
+```{r}
 # Create different model specifications
 median_spec <- tab_pfn_ts(mode = "regression") %>%
   set_engine("tabpfn_ts") %>%
@@ -269,7 +283,7 @@ mean_preds <- predict(mean_fit, ts_data)
 
 By default, the function auto-detects date and value columns. You can explicitly specify them:
 
-```{r, eval=TRUE}
+```{r}
 # Custom column names
 ts_data_custom <- tibble(
   datetime = as.POSIXct(dates),
@@ -289,7 +303,7 @@ model_custom <- tab_pfn_time_series(
 
 Choose between client mode (default, faster, no GPU needed) or local mode (requires GPU):
 
-```{r, eval=TRUE}
+```{r}
 # Client mode - uses tabpfn-client API, no GPU required
 model_client <- tab_pfn_time_series(
   train_df = ts_data,
@@ -313,7 +327,7 @@ model_local <- tab_pfn_time_series(
 
 Choose between median (default) or mean for point forecasts:
 
-```{r, eval=TRUE}
+```{r}
 # Median predictions
 model_median <- tab_pfn_time_series(
   train_df = ts_data,
@@ -437,7 +451,7 @@ py_module_available("tabpfn_time_series")
 
 ## Example: Real-World Scenario
 
-```{r, eval=TRUE}
+```{r}
 # Simulate sales data with trend and seasonality (smaller dataset for local mode)
 set.seed(42)
 dates <- seq(as.Date("2021-01-01"), as.Date("2021-03-31"), by = "day")

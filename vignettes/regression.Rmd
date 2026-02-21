@@ -17,7 +17,21 @@ First, ensure the Python environment is configured:
 
 ```{r setup, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
-setup_tabpfn()
+
+# Check if TabPFN is available
+has_tabpfn <- tryCatch({
+  setup_tabpfn()
+  check_tabpfn()
+}, error = function(e) {
+  message("Note: Error checking TabPFN availability: ", e$message)
+  FALSE
+})
+
+if (!has_tabpfn) {
+  message("Note: TabPFN Python environment not configured. Some examples will be skipped.")
+}
+
+knitr::opts_chunk$set(eval = has_tabpfn)
 ```
 
 Load required packages:
@@ -32,7 +46,7 @@ library(tidyr)
 
 Let's use the `mtcars` dataset to predict miles per gallon (mpg) based on engine characteristics:
 
-```{r regression-basic, eval=TRUE, message=FALSE, warning=FALSE}
+```{r regression-basic, message=FALSE, warning=FALSE}
 # Load data
 data(mtcars)
 
@@ -53,7 +67,7 @@ head(preds)
 
 TabPFN supports quantile predictions, providing uncertainty estimates for your predictions:
 
-```{r regression-quantiles, eval=TRUE, message=FALSE, warning=FALSE}
+```{r regression-quantiles, message=FALSE, warning=FALSE}
 # Get quantile predictions
 quantile_preds <- predict(model, X, 
                           type = "quantiles",
@@ -66,7 +80,7 @@ head(quantile_preds)
 
 ### Predictions vs Actual
 
-```{r plot-predictions, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+```{r plot-predictions, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
 # Combine predictions with actual values
 df <- data.frame(
   actual = y,
@@ -86,7 +100,7 @@ ggplot(df, aes(x = actual, y = predicted)) +
 
 ### Uncertainty Intervals
 
-```{r plot-uncertainty, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+```{r plot-uncertainty, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
 # Create dataframe with quantiles
 df_quant <- data.frame(
   actual = y,
@@ -114,7 +128,7 @@ ggplot(df_quant, aes(x = actual, y = median)) +
 
 ### Prediction Intervals
 
-```{r plot-conf-int, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+```{r plot-conf-int, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
 # Get 95% confidence intervals
 conf_preds <- predict(model, X, type = "conf_int", level = 0.95)
 
@@ -139,7 +153,7 @@ ggplot(df_conf, aes(x = actual, y = predicted)) +
 
 ## Residual Analysis
 
-```{r plot-residuals, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+```{r plot-residuals, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
 # Calculate residuals
 df_resid <- data.frame(
   predicted = preds$.pred,
@@ -157,7 +171,7 @@ ggplot(df_resid, aes(x = predicted, y = residual)) +
   theme_minimal()
 ```
 
-```{r plot-hist-residuals, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
+```{r plot-hist-residuals, message=FALSE, warning=FALSE, fig.width=6, fig.height=4}
 # Histogram of residuals
 ggplot(df_resid, aes(x = residual)) +
   geom_histogram(bins = 15, fill = "steelblue", color = "white", alpha = 0.7) +
@@ -170,7 +184,7 @@ ggplot(df_resid, aes(x = residual)) +
 
 ## Feature Relationships
 
-```{r plot-feature-rel, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+```{r plot-feature-rel, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
 # Relationship between weight and MPG
 df_wt <- data.frame(
   wt = mtcars$wt,

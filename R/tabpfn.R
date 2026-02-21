@@ -107,8 +107,8 @@ predict.tab_pfn <- function(object,
 
       # Convert to data frame with named columns
       pred_df <- as.data.frame(pred_matrix)
-      # Generate column names using the actual quantile values passed by the user
-      col_names <- paste0(".pred_q", quantiles_vec)
+      # Generate column names using formatted quantile values (e.g., 0.5 -> q050)
+      col_names <- paste0(".pred_q", sprintf("%03d", as.integer(round(quantiles_vec * 100))))
       colnames(pred_df) <- col_names
       return(tibble::as_tibble(pred_df))
 

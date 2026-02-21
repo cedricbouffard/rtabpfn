@@ -58,7 +58,7 @@ library(tidyr)
 
 Let's use the `mtcars` dataset to detect anomalous vehicles:
 
-```{r train-model, eval=TRUE}
+```{r train-model}
 # Load data
 data(mtcars)
 
@@ -76,7 +76,7 @@ head(scores)
 
 ## Understanding Anomaly Scores
 
-```{r score-summary, eval=TRUE}
+```{r score-summary}
 # Add scores to original data
 mtcars_with_scores <- mtcars %>%
   mutate(
@@ -100,7 +100,7 @@ print(most_anomalous[, c("car_name", "anomaly_score", "mpg", "cyl", "hp", "wt")]
 
 ### Anomaly Score Distribution
 
-```{r score-distribution, eval=TRUE}
+```{r score-distribution}
 ggplot(mtcars_with_scores, aes(x = anomaly_score)) +
   geom_histogram(bins = 20, fill = "steelblue", color = "white", alpha = 0.7) +
   geom_vline(xintercept = median(mtcars_with_scores$anomaly_score), 
@@ -114,7 +114,7 @@ ggplot(mtcars_with_scores, aes(x = anomaly_score)) +
 
 ### Anomaly Scores by Feature
 
-```{r scores-by-feature, eval=TRUE}
+```{r scores-by-feature}
 # Anomaly score vs MPG
 ggplot(mtcars_with_scores, aes(x = mpg, y = anomaly_score)) +
   geom_point(color = "steelblue", size = 3, alpha = 0.7) +
@@ -136,7 +136,7 @@ ggplot(mtcars_with_scores, aes(x = hp, y = anomaly_score)) +
 
 ### Feature Space with Anomaly Highlighting
 
-```{r feature-space-anomalies, eval=TRUE}
+```{r feature-space-anomalies}
 # Identify top 10% most anomalous
 threshold <- quantile(mtcars_with_scores$anomaly_score, 0.90)
 mtcars_with_scores$is_anomaly <- mtcars_with_scores$anomaly_score >= threshold
@@ -160,7 +160,7 @@ ggplot(mtcars_with_scores, aes(x = wt, y = hp)) +
 
 ### Multi-Feature Comparison
 
-```{r multi-feature-comparison, eval=TRUE}
+```{r multi-feature-comparison}
 # Compare normal vs anomalous across features
 mtcars_with_scores$is_anomaly_10pct <- mtcars_with_scores$anomaly_score >= 
   quantile(mtcars_with_scores$anomaly_score, 0.90)
@@ -197,7 +197,7 @@ ggplot(feature_long, aes(x = type, y = value, fill = type)) +
 
 ### PCA Visualization
 
-```{r pca-visualization, eval=TRUE}
+```{r pca-visualization}
 # Perform PCA for 2D visualization
 pca_result <- prcomp(mtcars[, c("cyl", "disp", "hp", "wt", "qsec")], 
                      scale. = TRUE)
@@ -226,7 +226,7 @@ ggplot(mtcars_with_scores, aes(x = PC1, y = PC2)) +
 
 ### Finding Optimal Threshold
 
-```{r threshold-selection, eval=TRUE}
+```{r threshold-selection}
 # Examine different percentiles
 thresholds <- c(0.95, 0.90, 0.85, 0.80, 0.75)
 
@@ -251,7 +251,7 @@ ggplot(threshold_comparison, aes(x = percentile * 100, y = n_anomalies)) +
 
 ### Anomaly Classification with Threshold
 
-```{r anomaly-classification, eval=TRUE}
+```{r anomaly-classification}
 # Classify as anomaly if score below 10th percentile
 threshold_10 <- quantile(mtcars_with_scores$anomaly_score, 0.90)
 
@@ -289,7 +289,7 @@ ggplot(mtcars_classified, aes(x = classification, y = mpg)) +
 
 ### Detailed Inspection
 
-```{r detailed-inspection, eval=TRUE}
+```{r detailed-inspection}
 # Get top 5 most anomalous cars
 top_anomalies <- mtcars_with_scores %>%
   arrange(anomaly_score) %>%
@@ -324,7 +324,7 @@ print(anomaly_deviation[, c("car_name", "mpg_diff", "hp_diff", "wt_diff", "qsec_
 
 ### Parallel Coordinates Plot
 
-```{r parallel-coordinates, eval=TRUE}
+```{r parallel-coordinates}
 # Prepare data for parallel coordinates
 parallel_df <- mtcars_with_scores %>%
   select(observation,is_anomaly_10pct, mpg, hp, wt, qsec, gear) %>%
@@ -359,7 +359,7 @@ ggplot(parallel_df, aes(x = feature_label, y = value_norm, color = is_anomaly_10
 
 ## Time-Series Style Anomaly Detection
 
-```{r timeseries-style, eval=TRUE}
+```{r timeseries-style}
 # Order by one feature (e.g., weight) to simulate time-series
 mtcars_ordered <- mtcars_with_scores %>%
   arrange(wt) %>%
@@ -380,7 +380,7 @@ ggplot(mtcars_ordered, aes(x = order_idx, y = anomaly_score)) +
 
 ## Using with Prediction
 
-```{r with-prediction, eval=TRUE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+```{r with-prediction, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
 # Combine with regression predictions
 X_reg <- mtcars[, c("cyl", "disp", "hp", "wt", "qsec")]
 y_reg <- mtcars$mpg
