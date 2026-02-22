@@ -24,26 +24,32 @@ more anomalous data points.
 First, ensure the Python environment is configured with
 tabpfn-extensions:
 
-```{r setup, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
+```{r setup, eval=TRUE, message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
+
+# Disable browser opening in Python
+if (requireNamespace("reticulate", quietly = TRUE)) {
+  try({
+    reticulate::py_run_string("import webbrowser; webbrowser.open = lambda *args, **kwargs: None")
+  }, silent = TRUE)
+}
 
 # Check if unsupervised extension is available
 has_unsupervised <- tryCatch({
   check_unsupervised_available()
 }, error = function(e) {
-  message("Note: Error checking unsupervised availability: ", e$message)
   FALSE
 })
 
 if (!has_unsupervised) {
   message("Note: tabpfn-extensions[unsupervised] not installed. Some examples will be skipped.")
-  message("Install with: reticulate::py_install('tabpfn-extensions[unsupervised]', pip = TRUE)")
 }
-# Don't skip all evaluation - let at least some code run
-# But set eval=FALSE if extension not available
-if (!has_unsupervised) {
-  knitr::opts_chunk$set(eval = FALSE)
-}
+
+# Detection of CI environment
+is_ci <- Sys.getenv("CI") != "" || Sys.getenv("GITHUB_ACTIONS") == "true"
+
+# Set eval to FALSE if extension not available or on CI
+knitr::opts_chunk$set(eval = has_unsupervised && !is_ci)
 ```
 
 Load required packages:

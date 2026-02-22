@@ -12,12 +12,18 @@ vignette: >
 ```{r setup, include=FALSE}
 library(rtabpfn)
 
+# Disable browser opening in Python
+if (requireNamespace("reticulate", quietly = TRUE)) {
+  try({
+    reticulate::py_run_string("import webbrowser; webbrowser.open = lambda *args, **kwargs: None")
+  }, silent = TRUE)
+}
+
 # Check if TabPFN Time Series is available
+# We skip setup_tabpfn() in vignettes to avoid interactive prompts
 has_ts <- tryCatch({
-  setup_tabpfn()
   check_time_series_available()
 }, error = function(e) {
-  message("Note: Error checking TabPFN Time Series availability: ", e$message)
   FALSE
 })
 
@@ -35,6 +41,9 @@ if (has_tidymodels) {
   library(tidymodels)
 }
 
+# Detection of CI environment to avoid heavy computation or hangs
+is_ci <- Sys.getenv("CI") != "" || Sys.getenv("GITHUB_ACTIONS") == "true"
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -42,7 +51,7 @@ knitr::opts_chunk$set(
   fig.height = 5,
   warning = FALSE,
   message = FALSE,
-  eval = has_ts && has_tidymodels
+  eval = has_ts && has_tidymodels && !is_ci
 )
 ```
 
@@ -300,12 +309,92 @@ ts_data_custom <- tibble(
 
 model_custom <- tab_pfn_time_series(
   train_df = ts_data_custom,
+    prediction_length = 30,
+    quantiles = c(0.1, 0.5, 0.9),
+    tabpfn_mode = "local",
+    tabpfn_output_selection = "median"
+  )
+```
+
+### Using with Workflows
+
+```{r, eval=FALSE}
+# Create a simple workflow
+ts_wf <- workflow() %>%
+  add_model(ts_spec) %>%
+  add_formula(value ~ date)
+
+ts_fit <- fit(ts_wf, data = ts_data)
+```
+
+
+### Comparing Models
+
+```{r}
+# Create different model specifications
+median_spec <- tab_pfn_ts(mode = "regression") %>%
+  set_engine("tabpfn_ts") %>%
+  set_args(prediction_length = 30, tabpfn_output_selection = "median")
+
+mean_spec <- tab_pfn_ts(mode = "regression") %>%
+  set_engine("tabpfn_ts") %>%
+  set_args(prediction_length = 30, tabpfn_output_selection = "mean")
+
+# Fit both models (columns auto-detected)
+median_fit <- fit(median_spec, data = ts_data)
+mean_fit <- fit(mean_spec, data = ts_data)
+
+# Compare forecasts
+median_preds <- predict(median_fit, ts_data)
+mean_preds <- predict(mean_fit, ts_data)
+```
+
+## Advanced Features
+
+### Custom Date and Value Columns
+
+By default, the function auto-detects date and value columns. You can explicitly specify them:
+
+```{r}
+# Custom column names
+ts_data_custom <- tibble(
+  datetime = as.POSIXct(dates),
+  sales = values
+)
+
+model_custom <- tab_pfn_time_series(
+  train_df = ts_data_custom,
   prediction_length = 30,
   date_col = "datetime",
   value_col = "sales",
   verbose = FALSE
 )
 ```
+
+### TabPFN Mode
+
+Choose between client mode (default, faster, no GPU needed) or local mode (requires GPU):
+
+```{r, eval=FALSE}
+# Client mode - uses tabpfn-client API, no GPU required
+model_client <- tab_pfn_time_series(
+  train_df = ts_data,
+  prediction_length = 30,
+  tabpfn_mode = "client",
+  verbose = FALSE
+)
+
+# Local mode - requires local TabPFN installation, can use GPU
+# Note: Using smaller dataset for local mode to avoid memory issues
+ts_data_small <- ts_data %>% slice_head(90)  # Use ~3 months for local mode
+model_local <- tab_pfn_time_series(
+  train_df = ts_data_small,
+  prediction_length = 30,
+  tabpfn_mode = "local",
+  verbose = FALSE
+)
+```
+
 
 ### TabPFN Mode
 

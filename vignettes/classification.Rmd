@@ -15,15 +15,20 @@ The `rtabpfn` package provides a powerful interface for classification tasks usi
 
 First, ensure the Python environment is configured:
 
-```{r setup, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
+```{r setup, eval=TRUE, message=FALSE, warning=FALSE, echo=F}
 library(rtabpfn)
+
+# Disable browser opening in Python
+if (requireNamespace("reticulate", quietly = TRUE)) {
+  try({
+    reticulate::py_run_string("import webbrowser; webbrowser.open = lambda *args, **kwargs: None")
+  }, silent = TRUE)
+}
 
 # Check if TabPFN is available
 has_tabpfn <- tryCatch({
-  setup_tabpfn()
   check_tabpfn()
 }, error = function(e) {
-  message("Note: Error checking TabPFN availability: ", e$message)
   FALSE
 })
 
@@ -31,7 +36,10 @@ if (!has_tabpfn) {
   message("Note: TabPFN Python environment not configured. Some examples will be skipped.")
 }
 
-knitr::opts_chunk$set(eval = has_tabpfn)
+# Detection of CI environment
+is_ci <- Sys.getenv("CI") != "" || Sys.getenv("GITHUB_ACTIONS") == "true"
+
+knitr::opts_chunk$set(eval = has_tabpfn && !is_ci)
 ```
 
 Load required packages:
