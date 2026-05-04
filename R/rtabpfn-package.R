@@ -795,12 +795,26 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
       })
     }
   } else {
-    # Use virtual environment by name
-    existing_envs <- reticulate::virtualenv_list()
+    # Use environment by name
+    is_conda <- FALSE
+    tryCatch({
+      conda_envs <- reticulate::conda_list()
+      if (!is.null(conda_envs) && envname %in% conda_envs$name) {
+        is_conda <- TRUE
+      }
+    }, error = function(e) NULL)
 
-    if (force || !envname %in% existing_envs) {
-      message("Creating virtual environment: ", envname)
-      reticulate::virtualenv_create(envname, python = NULL)
+    if (is_conda) {
+      message("Using existing conda environment: ", envname)
+      reticulate::use_condaenv(envname, required = TRUE)
+    } else {
+      # Use virtual environment by name
+      existing_envs <- reticulate::virtualenv_list()
+
+      if (force || !envname %in% existing_envs) {
+        message("Creating virtual environment: ", envname)
+        reticulate::virtualenv_create(envname, python = NULL)
+      }
     }
 
     # Check if Python is already initialized
