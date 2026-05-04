@@ -13,9 +13,19 @@ check_and_warn_libpython_mismatch <- function() {
     return(invisible(NULL))
   }
 
+  # Check if Python is already initialized without triggering initialization
+  python_already_initialized <- tryCatch({
+    reticulate::py_available()
+  }, error = function(e) FALSE)
+
+  if (!python_already_initialized) {
+    return(invisible(NULL))
+  }
+
   py_config <- tryCatch({
     reticulate::py_config()
   }, error = function(e) NULL)
+
 
   if (is.null(py_config) || is.null(py_config$python)) {
     return(invisible(NULL))
@@ -45,18 +55,33 @@ check_and_warn_libpython_mismatch <- function() {
       "2. Recreate virtualenv (avoiding conda Python):\n",
       "   reticulate::virtualenv_remove('tabpfn')\n",
       "   setup_tabpfn()\n\n",
-      "3. Run diagnose_python_env() for detailed diagnosis\n"
+      "3. Set RETICULATE_PYTHON environment variable before starting R:\n",
+      "   Sys.setenv(RETICULATE_PYTHON = '", py_config$python, "')\n",
+      "   # Then restart R session\n\n",
+      "4. Run diagnose_python_env() for detailed diagnosis\n"
     )
-    .tabpfn_options$libpython_warned <<- TRUE
+    .tabpfn_options$libpython_warned <- TRUE
+
   }
+
 
   invisible(NULL)
 }
 
 get_libpython_status <- function() {
+  # Check if Python is already initialized
+  is_initialized <- tryCatch({
+    reticulate::py_available()
+  }, error = function(e) FALSE)
+
+  if (!is_initialized) {
+    return(NULL)
+  }
+
   py_config <- tryCatch({
     reticulate::py_config()
   }, error = function(e) NULL)
+
 
   if (is.null(py_config) || is.null(py_config$python)) {
     return(list(
@@ -99,18 +124,20 @@ ensure_python_env <- function() {
   }
 
   if (!is.null(.tabpfn_options$python_path) && file.exists(.tabpfn_options$python_path)) {
-    current_python <- tryCatch({
-      reticulate::py_config()$python
-    }, error = function(e) NULL)
-
     # Check if Python is already initialized
     is_initialized <- tryCatch({
       reticulate::py_available()
     }, error = function(e) FALSE)
 
+    current_python <- NULL
+    if (is_initialized) {
+      current_python <- tryCatch({
+        reticulate::py_config()$python
+      }, error = function(e) NULL)
+    }
+
     if (is.null(current_python) || !identical(normalizePath(current_python), normalizePath(.tabpfn_options$python_path))) {
       # Only try to configure if Python is not already initialized
-      # or if it's initialized with a different version
       if (!is_initialized) {
         tryCatch({
           reticulate::use_python(.tabpfn_options$python_path, required = FALSE)
@@ -121,6 +148,7 @@ ensure_python_env <- function() {
     }
   }
 }
+
 
 # Auto-configure environment on package load
 .onLoad <- function(libname, pkgname) {
@@ -204,23 +232,47 @@ ensure_python_env <- function() {
     .tabpfn_options$python_path <- saved_python_path
   }
 
+  # Check if Python is already initialized or configured by the user
+  reticulate_python_env <- Sys.getenv("RETICULATE_PYTHON")
+  python_configured <- !is.null(.tabpfn_options$python_path) ||
+                       (reticulate_python_env != "") ||
+                       tryCatch({ reticulate::py_available() }, error = function(e) FALSE)
+
+  if (python_configured) {
+    return(invisible(NULL))
+  }
+
   # Auto-detect best TabPFN venv (prioritizing ones with tabpfn-time-series)
+
   auto_detect_best_tabpfn_env <- function() {
+    # Get user's home and documents directory safely
+    home_dir <- path.expand("~")
+    
     venv_paths <- c(
-      "C:/Users/cedbo/OneDrive/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
-      "~/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
-      "C:/Users/cedbo/.virtualenvs/tabpfn/Scripts/python.exe",
-      "~/.virtualenvs/tabpfn/Scripts/python.exe",
-      "C:/venvs/tabpfn/Scripts/python.exe"
+      file.path(home_dir, ".virtualenvs/tabpfn/Scripts/python.exe"),
+      file.path(home_dir, "Documents/.virtualenvs/tabpfn/Scripts/python.exe"),
+      "C:/venvs/tabpfn/Scripts/python.exe",
+      "~/.virtualenvs/tabpfn/bin/python",
+      "~/Documents/.virtualenvs/tabpfn/bin/python"
     )
 
     for (venv_path in venv_paths) {
       expanded_path <- path.expand(venv_path)
       if (file.exists(expanded_path)) {
         venv_dir <- dirname(expanded_path)
-        site_packages <- file.path(venv_dir, "../Lib/site-packages")
-        if (dir.exists(site_packages)) {
-          pkg_dirs <- list.dirs(site_packages, full.names = FALSE, recursive = FALSE)
+        # Check for site-packages to see if tabpfn-time-series is installed
+        # Handles both Windows (Lib/site-packages) and Unix (lib/pythonX.Y/site-packages)
+        lib_dir <- if (grepl("Scripts", expanded_path)) {
+          file.path(venv_dir, "../Lib/site-packages")
+        } else {
+          # Try to find lib directory in Unix-style
+          parent <- dirname(venv_dir)
+          libs <- list.dirs(file.path(parent, "lib"), recursive = FALSE)
+          if (length(libs) > 0) file.path(libs[1], "site-packages") else NULL
+        }
+        
+        if (!is.null(lib_dir) && dir.exists(lib_dir)) {
+          pkg_dirs <- list.dirs(lib_dir, full.names = FALSE, recursive = FALSE)
           if ("tabpfn_time_series" %in% pkg_dirs) {
             return(expanded_path)
           }
@@ -232,12 +284,14 @@ ensure_python_env <- function() {
 
   # Fallback: detect any TabPFN venv
   auto_detect_any_tabpfn_env <- function() {
+    home_dir <- path.expand("~")
+    
     venv_paths <- c(
-      "C:/Users/cedbo/OneDrive/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
-      "~/Documents/.virtualenvs/tabpfn/Scripts/python.exe",
-      "C:/Users/cedbo/.virtualenvs/tabpfn/Scripts/python.exe",
-      "~/.virtualenvs/tabpfn/Scripts/python.exe",
-      "C:/venvs/tabpfn/Scripts/python.exe"
+      file.path(home_dir, ".virtualenvs/tabpfn/Scripts/python.exe"),
+      file.path(home_dir, "Documents/.virtualenvs/tabpfn/Scripts/python.exe"),
+      "C:/venvs/tabpfn/Scripts/python.exe",
+      "~/.virtualenvs/tabpfn/bin/python",
+      "~/Documents/.virtualenvs/tabpfn/bin/python"
     )
 
     for (venv_path in venv_paths) {
@@ -579,7 +633,34 @@ check_tabpfn <- function(install = FALSE,
     # Install TabPFN
     reticulate::py_install("tabpfn", envname = envname, method = method, pip = TRUE)
 
+    # Verify installation
+    # Use py_module_available which is safer than direct import
     has_tabpfn <- reticulate::py_module_available("tabpfn")
+
+    if (!has_tabpfn) {
+      # Sometimes py_module_available fails due to libpython mismatch even if installed
+      # Try a more direct check using pip
+      python_path <- tryCatch({
+        if (envname %in% reticulate::virtualenv_list()) {
+          reticulate::virtualenv_python(envname)
+        } else {
+          NULL
+        }
+      }, error = function(e) NULL)
+
+      if (!is.null(python_path)) {
+        check_cmd <- paste0("\"", python_path, "\" -m pip show tabpfn")
+        is_installed_pip <- tryCatch({
+          suppressWarnings(system(check_cmd, intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE) == 0)
+        }, error = function(e) FALSE)
+
+        if (is_installed_pip) {
+          message("TabPFN is installed in the virtual environment but could not be loaded by R.")
+          message("This is likely due to the libpython mismatch detected earlier.")
+          has_tabpfn <- TRUE
+        }
+      }
+    }
 
     if (has_tabpfn) {
       message("TabPFN installed successfully!")
@@ -722,16 +803,54 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
       reticulate::virtualenv_create(envname, python = NULL)
     }
 
-    message("Using virtual environment: ", envname)
-    reticulate::use_virtualenv(envname, required = TRUE)
+    # Check if Python is already initialized
+    python_already_initialized <- tryCatch({
+      reticulate::py_available()
+    }, error = function(e) FALSE)
 
-    # Store the Python path from the virtualenv
-    tryCatch({
-      .tabpfn_options$python_path <- reticulate::py_config()$python
-    }, error = function(e) {
-      # Continue even if we can't store the path
-    })
+    if (python_already_initialized) {
+      # Check which Python is currently being used
+      current_python <- tryCatch({
+        reticulate::py_config()$python
+      }, error = function(e) NULL)
+
+      target_python <- tryCatch({
+        reticulate::virtualenv_python(envname)
+      }, error = function(e) NULL)
+
+      if (!is.null(current_python) && !is.null(target_python) &&
+          normalizePath(current_python) == normalizePath(target_python)) {
+        message("Python environment '", envname, "' already configured correctly.")
+        .tabpfn_options$python_path <- target_python
+        options(rtabpfn.python_path = target_python)
+      } else {
+        # Python is initialized with a different version
+        warning("Python has already been initialized with a different version.")
+        message("Current Python: ", current_python)
+        message("Requested Environment: ", envname, " (", target_python, ")")
+        message("\nNote: Python cannot be re-initialized in the same R session.")
+        message("Please restart R and run setup_tabpfn() again, or")
+        message("unset the RETICULATE_PYTHON environment variable before starting R.")
+        message("\nContinuing with currently initialized Python...")
+
+        # Use the currently initialized Python
+        .tabpfn_options$python_path <- current_python
+        options(rtabpfn.python_path = current_python)
+      }
+    } else {
+      # Python not yet initialized, safe to use
+      message("Using virtual environment: ", envname)
+      tryCatch({
+        reticulate::use_virtualenv(envname, required = FALSE)
+        # Store the Python path from the virtualenv
+        .tabpfn_options$python_path <- reticulate::py_config()$python
+        options(rtabpfn.python_path = .tabpfn_options$python_path)
+      }, error = function(e) {
+        warning("Failed to initialize virtual environment '", envname, "': ", e$message)
+      })
+    }
   }
+
 
   # Setup PyTorch with GPU support if requested
   if (setup_gpu) {
@@ -813,8 +932,19 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
   }
 
   message("TabPFN environment ready!")
+
+  # Final check for libpython mismatch to give a concluding advice
+  status <- get_libpython_status()
+  if (!is.null(status) && status$is_mismatch) {
+    message("\n*** NOTE: A Python configuration mismatch was detected ***")
+    message("If you encounter errors when using TabPFN, please try setting:")
+    message("Sys.setenv(RETICULATE_PYTHON = '", status$python_path, "')")
+    message("in your .Rprofile or before loading the package.")
+  }
+
   invisible(NULL)
 }
+
 
 
 #' Diagnose Python Environment Configuration
