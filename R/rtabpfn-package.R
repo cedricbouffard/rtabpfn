@@ -722,6 +722,9 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
                           disable_analytics = TRUE, setup_gpu = TRUE,
                           force_gpu = FALSE, cuda_version = NULL) {
 
+  # Disable browser opening for license acceptance (TabPFN v3+)
+  Sys.setenv("TABPFN_NO_BROWSER" = "true")
+
   # Disable analytics by default to avoid PostHog warnings
   if (disable_analytics) {
     Sys.setenv("DO_NOT_TRACK" = "1")

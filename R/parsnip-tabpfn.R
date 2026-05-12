@@ -10,8 +10,7 @@ NULL
 #'
 #' @param mode A single character string for the prediction mode: "classification" or "regression"
 #' @param engine A single character string specifying the computational engine. For TabPFN, this is always "tabpfn"
-#' @param N_ensemble_configurations Number of ensemble configurations (integer)
-#' @param max_len_feature_basis Maximum length of feature basis (integer)
+#' @param n_estimators Number of estimators in the ensemble (integer)
 #' @param device Device to use: "auto", "cpu", or "cuda"
 #' @param ... Additional engine-specific arguments
 #'
@@ -35,14 +34,12 @@ NULL
 tab_pfn <- function(
     mode = "unknown",
     engine = "tabpfn",
-    N_ensemble_configurations = 8,
-    max_len_feature_basis = 1024,
+    n_estimators = 8,
     device = "auto",
     ...
 ) {
   args <- list(
-    N_ensemble_configurations = rlang::enquo(N_ensemble_configurations),
-    max_len_feature_basis = rlang::enquo(max_len_feature_basis),
+    n_estimators = rlang::enquo(n_estimators),
     device = rlang::enquo(device),
     ...
   )
@@ -72,22 +69,18 @@ tab_pfn <- function(
 
 #' @export
 #' @rdname tab_pfn
-update.tab_pfn <- function(object, parameters = NULL, N_ensemble_configurations = NULL,
-                            max_len_feature_basis = NULL, device = NULL, fresh = FALSE, ...) {
+update.tab_pfn <- function(object, parameters = NULL, n_estimators = NULL,
+                            device = NULL, fresh = FALSE, ...) {
   parsnip::update_dot_check(...)
 
   if (fresh) {
     object$args <- list(
-      N_ensemble_configurations = rlang::enquo(N_ensemble_configurations),
-      max_len_feature_basis = rlang::enquo(max_len_feature_basis),
+      n_estimators = rlang::enquo(n_estimators),
       device = rlang::enquo(device)
     )
   } else {
-    if (!is.null(N_ensemble_configurations)) {
-      object$args$N_ensemble_configurations <- rlang::enquo(N_ensemble_configurations)
-    }
-    if (!is.null(max_len_feature_basis)) {
-      object$args$max_len_feature_basis <- rlang::enquo(max_len_feature_basis)
+    if (!is.null(n_estimators)) {
+      object$args$n_estimators <- rlang::enquo(n_estimators)
     }
     if (!is.null(device)) {
       object$args$device <- rlang::enquo(device)
@@ -204,8 +197,7 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
   args <- object$args
 
   # Convert to simple vectors if needed
-  N_ensemble_configurations <- rlang::eval_tidy(args$N_ensemble_configurations)
-  max_len_feature_basis <- rlang::eval_tidy(args$max_len_feature_basis)
+  n_estimators <- rlang::eval_tidy(args$n_estimators)
   device <- rlang::eval_tidy(args$device)
 
   # Suppress PostHog analytics warnings
@@ -275,8 +267,7 @@ fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) 
   args <- object$args
 
   # Convert to simple vectors if needed
-  N_ensemble_configurations <- rlang::eval_tidy(args$N_ensemble_configurations)
-  max_len_feature_basis <- rlang::eval_tidy(args$max_len_feature_basis)
+  n_estimators <- rlang::eval_tidy(args$n_estimators)
   device <- rlang::eval_tidy(args$device)
 
   # Convert x to data frame if needed
@@ -387,8 +378,7 @@ required_pkgs.tab_pfn_fit <- function(object, ...) {
 print.tab_pfn <- function(x, ...) {
   cat("TabPFN Model Specification (", x$mode, ")\n\n", sep = "")
   cat("Main Arguments:\n")
-  cat("  N_ensemble_configurations = ", rlang::eval_tidy(x$args$N_ensemble_configurations), "\n", sep = "")
-  cat("  max_len_feature_basis = ", rlang::eval_tidy(x$args$max_len_feature_basis), "\n", sep = "")
+  cat("  n_estimators = ", rlang::eval_tidy(x$args$n_estimators), "\n", sep = "")
   cat("  device = '", rlang::eval_tidy(x$args$device), "'\n\n", sep = "")
   cat("Computational engine: ", x$engine, "\n", sep = "")
 
