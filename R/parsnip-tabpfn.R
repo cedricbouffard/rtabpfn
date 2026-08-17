@@ -70,13 +70,15 @@ tab_pfn <- function(
 #' @export
 #' @rdname tab_pfn
 update.tab_pfn <- function(object, parameters = NULL, n_estimators = NULL,
-                            device = NULL, fresh = FALSE, ...) {
+                            device = NULL, N_ensemble_configurations = NULL,
+                            fresh = FALSE, ...) {
   parsnip::update_dot_check(...)
 
   if (fresh) {
     object$args <- list(
       n_estimators = rlang::enquo(n_estimators),
-      device = rlang::enquo(device)
+      device = rlang::enquo(device),
+      N_ensemble_configurations = rlang::enquo(N_ensemble_configurations)
     )
   } else {
     if (!is.null(n_estimators)) {
@@ -84,6 +86,9 @@ update.tab_pfn <- function(object, parameters = NULL, n_estimators = NULL,
     }
     if (!is.null(device)) {
       object$args$device <- rlang::enquo(device)
+    }
+    if (!is.null(N_ensemble_configurations)) {
+      object$args$N_ensemble_configurations <- rlang::enquo(N_ensemble_configurations)
     }
     object$args <- c(object$args, parameters)
   }
@@ -187,10 +192,18 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
     x_train <- mold$predictors
     y_train <- mold$outcomes[[1]]
   } else {
-    # XY interface
-    mold <- hardhat::mold(data[[1]], data[[2]])
-    x_train <- mold$predictors
-    y_train <- mold$outcomes[[1]]
+    dots <- list(...)
+    if (!is.null(dots$x) && !is.null(dots$y)) {
+      # XY interface passed via x = / y =
+      return(fit_xy.tab_pfn(object = object, x = dots$x, y = dots$y,
+                            control = control))
+    }
+    if (!is.null(data)) {
+      # XY interface passed via data = list(x, y)
+      return(fit_xy.tab_pfn(object = object, x = data[[1]], y = data[[2]],
+                            control = control))
+    }
+    stop("TabPFN fit() requires either a formula and data, or x and y.")
   }
 
   # Get model arguments
@@ -205,25 +218,23 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
   Sys.setenv("DO_NOT_TRACK" = "1")
 
   tryCatch({
-    if (x$mode == "classification") {
+    if (object$mode == "classification") {
       # Fit classification model
       model <- rtabpfn::tab_pfn_classification(
         X = x_train,
         y = y_train,
-        device = device
+        device = device,
+        n_estimators = n_estimators
       )
 
-      class(model) <- c("tab_pfn")
-
-    } else if (x$mode == "regression") {
+    } else if (object$mode == "regression") {
       # Fit regression model
       model <- rtabpfn::tab_pfn_regression(
         X = x_train,
         y = y_train,
-        device = device
+        device = device,
+        n_estimators = n_estimators
       )
-
-      class(model) <- c("tab_pfn")
     } else {
       stop("TabPFN mode must be 'classification' or 'regression'")
     }
@@ -242,7 +253,7 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
   # Create the parsnip fit object
   fit <- list(
     model = model,
-    spec = x,
+    spec = object,
     preproc = mold,
     elapsed = NA_real_
   )
@@ -259,6 +270,8 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
 #' @param ... Additional arguments
 #'
 #' @return A fitted model object
+#' @method fit_xy tab_pfn
+#' @importFrom generics fit_xy
 #' @export
 fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) {
   rtabpfn:::ensure_python_env()
@@ -284,20 +297,18 @@ fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) 
       model <- rtabpfn::tab_pfn_classification(
         X = x_train,
         y = y_train,
-        device = device
+        device = device,
+        n_estimators = n_estimators
       )
-
-      class(model) <- c("tab_pfn")
 
     } else if (object$mode == "regression") {
       # Fit regression model
       model <- rtabpfn::tab_pfn_regression(
         X = x_train,
         y = y_train,
-        device = device
+        device = device,
+        n_estimators = n_estimators
       )
-
-      class(model) <- c("tab_pfn")
     } else {
       stop("TabPFN mode must be 'classification' or 'regression'")
     }
@@ -368,23 +379,6 @@ required_pkgs.tab_pfn_fit <- function(object, ...) {
   required_pkgs(object$spec)
 }
 
-#' Print method for TabPFN model specification
-#'
-#' @param x A model specification
-#' @param ... Additional arguments (not used)
-#'
-#' @return The model specification (invisibly)
-#' @export
-print.tab_pfn <- function(x, ...) {
-  cat("TabPFN Model Specification (", x$mode, ")\n\n", sep = "")
-  cat("Main Arguments:\n")
-  cat("  n_estimators = ", rlang::eval_tidy(x$args$n_estimators), "\n", sep = "")
-  cat("  device = '", rlang::eval_tidy(x$args$device), "'\n\n", sep = "")
-  cat("Computational engine: ", x$engine, "\n", sep = "")
-
-  invisible(x)
-}
-
 #' Print method for fitted TabPFN model
 #'
 #' @param x A fitted model object
@@ -396,4 +390,6 @@ print.tab_pfn_fit <- function(x, ...) {
   print(x$spec, ...)
   cat("\nModel fit:\n")
   print(x$model)
+
+  invisible(x)
 }

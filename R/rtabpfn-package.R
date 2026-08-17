@@ -149,6 +149,129 @@ ensure_python_env <- function() {
   }
 }
 
+# --- TabPFN license / token helpers ----------------------------------------
+
+tabpfn_license_instructions <- function() {
+  paste0(
+    "\n*** TABPFN LICENSE REQUIRED ***\n",
+    "TabPFN requires a one-time license acceptance before it can download\n",
+    "the model weights for local inference.\n\n",
+    "To fix this:\n",
+    "  1. Open https://ux.priorlabs.ai in a browser and log in (or register)\n",
+    "  2. Accept the license at https://ux.priorlabs.ai/account/licenses\n",
+    "  3. Copy your API key from https://ux.priorlabs.ai/account\n",
+    "  4. Set the TABPFN_TOKEN environment variable and restart R:\n",
+    "       Windows:  setx TABPFN_TOKEN \"<your-api-key>\"\n",
+    "       R:        Sys.setenv(TABPFN_TOKEN = \"<your-api-key>\")\n",
+    "  5. If you already had a token, check that it is still valid (keys\n",
+    "     expire) and that the license is accepted for the model version\n",
+    "     you are using.\n",
+    "\n"
+  )
+}
+
+# Online status of a TabPFN license token.
+# Returns one of: "ok", "missing", "invalid", "license", "unreachable".
+tabpfn_token_status <- function(token = Sys.getenv("TABPFN_TOKEN"),
+                                timeout_sec = 5,
+                                license_version = "tabpfn-2.6-license-v1.0") {
+  if (!nzchar(token)) {
+    return("missing")
+  }
+
+  curl <- Sys.which("curl")
+  if (!nzchar(curl)) {
+    return("unreachable")
+  }
+
+  api_url <- "https://api.priorlabs.ai"
+
+  http_get <- function(url, with_auth = TRUE) {
+    # Note: the auth header must be passed via `--oauth2-bearer` because
+    # system2() does not quote argument values containing spaces reliably
+    # on Windows (e.g. "Authorization: Bearer <token>" would be split).
+    # `-L` follows redirects, like the Python urllib client used by tabpfn.
+    args <- c("-s", "-L", "-m", as.character(timeout_sec), "-w", "\n%{http_code}")
+    if (with_auth) {
+      args <- c(args, "--oauth2-bearer", token)
+    }
+    args <- c(args, url)
+    out <- suppressWarnings(system2(curl, args, stdout = TRUE, stderr = TRUE))
+    status <- if (length(out) > 0) trimws(out[length(out)]) else "000"
+    body <- if (length(out) > 1) paste(out[-length(out)], collapse = "\n") else ""
+    list(status = status, body = body)
+  }
+
+  # 1. Token validity
+  r1 <- http_get(paste0(api_url, "/protected/"))
+  if (!r1$status %in% c("200", "201", "204")) {
+    if (r1$status %in% c("401", "403")) {
+      return("invalid")
+    }
+    return("unreachable")
+  }
+
+  # 2. License acceptance
+  r2 <- http_get(paste0(api_url, "/account/license/?version=",
+                        utils::URLencode(license_version, reserved = TRUE)))
+  if (r2$status == "200" &&
+      grepl('"accepted"[[:space:]]*:[[:space:]]*true', r2$body)) {
+    return("ok")
+  }
+  "license"
+}
+
+#' Check the TabPFN license token status
+#'
+#' @description
+#' Checks whether the `TABPFN_TOKEN` environment variable is set and valid,
+#' and whether the TabPFN license has been accepted for the account. Prints
+#' instructions when the token is missing, invalid/expired, or the license
+#' has not been accepted yet.
+#'
+#' This check also runs automatically when the package is loaded.
+#'
+#' @param verbose Logical. If TRUE (default), prints a status message.
+#'
+#' @return Invisibly, one of: "ok", "missing", "invalid", "license",
+#'   "unreachable".
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' check_tabpfn_license()
+#' }
+check_tabpfn_license <- function(verbose = TRUE) {
+  status <- tabpfn_token_status()
+
+  if (!verbose) {
+    return(invisible(status))
+  }
+
+  if (status == "ok") {
+    message("TabPFN license token: valid, license accepted.")
+  } else if (status == "missing") {
+    message(tabpfn_license_instructions())
+  } else if (status == "invalid") {
+    message(
+      "\n*** TABPFN TOKEN INVALID OR EXPIRED ***\n",
+      "The TABPFN_TOKEN API key was rejected by the Prior Labs server.\n",
+      tabpfn_license_instructions()
+    )
+  } else if (status == "license") {
+    message(
+      "\n*** TABPFN LICENSE NOT ACCEPTED ***\n",
+      "Your TABPFN_TOKEN is valid, but the license has not been accepted\n",
+      "for this account (or the token cannot access the license endpoint).\n",
+      "Open https://ux.priorlabs.ai/account/licenses and accept the license,\n",
+      "then retry.\n"
+    )
+  }
+  # status == "unreachable": nothing to report (offline / no curl)
+
+  invisible(status)
+}
+
 
 # Auto-configure environment on package load
 .onLoad <- function(libname, pkgname) {
@@ -331,9 +454,16 @@ ensure_python_env <- function() {
     }
   }
 
-  # Don't call ensure_python_env() during package load to avoid conflicts
+# Don't call ensure_python_env() during package load to avoid conflicts
   # It will be called when actually needed (e.g., when calling TabPFN functions)
   # ensure_python_env()
+
+  # Check the TabPFN license token once per session and print instructions
+  # if it is missing, invalid/expired, or the license is not accepted.
+  if (is.null(.tabpfn_options$license_checked)) {
+    .tabpfn_options$license_checked <- TRUE
+    check_tabpfn_license(verbose = TRUE)
+  }
 }
 
 #' Check GPU Availability

@@ -231,11 +231,31 @@ tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33, ...) {
   # Load Python module
   tabpfn <- reticulate::import("tabpfn", convert = FALSE)
 
-  # Create regressor
-  reg <- tabpfn$TabPFNRegressor(device = device, ...)
-
-  # Fit model
-  reg$fit(X, y)
+  # Create regressor and fit, with friendly license/token diagnostics
+  tryCatch({
+    dots <- list(...)
+    n_estimators <- dots$n_estimators
+    if (!is.null(n_estimators)) {
+      n_estimators <- as.integer(n_estimators)
+    }
+    dots$n_estimators <- NULL
+    ctor_args <- list(device = device)
+    if (!is.null(n_estimators)) {
+      ctor_args$n_estimators <- n_estimators
+    }
+    reg <- do.call(tabpfn$TabPFNRegressor, c(ctor_args, dots))
+    reg$fit(X, y)
+  }, error = function(e) {
+    msg <- conditionMessage(e)
+    if (grepl("license|token|401|403|authentication", msg, ignore.case = TRUE)) {
+      stop(
+        "TabPFN license/token error: ", msg, "\n",
+        rtabpfn:::tabpfn_license_instructions(),
+        call. = FALSE
+      )
+    }
+    stop(e)
+  })
 
   # Create model object
   model <- list(
@@ -266,11 +286,8 @@ tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33, ...)
 
   rtabpfn:::ensure_python_env()
 
-  # Load Python module
+# Load Python module
   tabpfn <- reticulate::import("tabpfn", convert = FALSE)
-
-  # Create classifier
-  clf <- tabpfn$TabPFNClassifier(device = device, ...)
 
   # Get levels
   if (is.factor(y)) {
@@ -279,8 +296,31 @@ tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33, ...)
     levels_vec <- unique(as.character(y))
   }
 
-  # Fit model
-  clf$fit(X, y)
+# Create classifier and fit, with friendly license/token diagnostics
+  tryCatch({
+    dots <- list(...)
+    n_estimators <- dots$n_estimators
+    if (!is.null(n_estimators)) {
+      n_estimators <- as.integer(n_estimators)
+    }
+    dots$n_estimators <- NULL
+    ctor_args <- list(device = device)
+    if (!is.null(n_estimators)) {
+      ctor_args$n_estimators <- n_estimators
+    }
+    clf <- do.call(tabpfn$TabPFNClassifier, c(ctor_args, dots))
+    clf$fit(X, y)
+  }, error = function(e) {
+    msg <- conditionMessage(e)
+    if (grepl("license|token|401|403|authentication", msg, ignore.case = TRUE)) {
+      stop(
+        "TabPFN license/token error: ", msg, "\n",
+        rtabpfn:::tabpfn_license_instructions(),
+        call. = FALSE
+      )
+    }
+    stop(e)
+  })
 
   # Create model object
   model <- list(
@@ -300,22 +340,37 @@ tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33, ...)
 
 #' Print method for TabPFN models
 #'
-#' @param x A tab_pfn model object
+#' @param x A tab_pfn model object (specification or fitted model)
 #' @param ... Additional arguments (not used)
 #' @export
 print.tab_pfn <- function(x, ...) {
-  cat("TabPFN", tools::toTitleCase(x$mode), "Model\n\n")
+  # Check if this is a model specification or a fitted model
+  if ("model_spec" %in% class(x)) {
+    # Print for model specification (from parsnip)
+    cat("TabPFN Model Specification (", x$mode, ")\n\n", sep = "")
+    cat("Main Arguments:\n")
+    if (!is.null(x$args$n_estimators)) {
+      cat("  n_estimators = ", rlang::eval_tidy(x$args$n_estimators), "\n", sep = "")
+    }
+    if (!is.null(x$args$device)) {
+      cat("  device = '", rlang::eval_tidy(x$args$device), "'\n", sep = "")
+    }
+    cat("\nComputational engine: ", x$engine, "\n", sep = "")
+  } else {
+    # Print for fitted model
+    cat("TabPFN", tools::toTitleCase(x$mode), "Model\n\n")
 
-  if (!is.null(x$predictor_names)) {
-    cat("Predictors:", length(x$predictor_names), "\n")
+    if (!is.null(x$predictor_names)) {
+      cat("Predictors:", length(x$predictor_names), "\n")
+    }
+
+    if (x$mode == "classification" && !is.null(x$levels)) {
+      cat("Classes:", length(x$levels), "\n")
+      cat(" ", paste(x$levels, collapse = ", "), "\n")
+    }
+
+    cat("Device:", x$device, "\n")
   }
-
-  if (x$mode == "classification" && !is.null(x$levels)) {
-    cat("Classes:", length(x$levels), "\n")
-    cat(" ", paste(x$levels, collapse = ", "), "\n")
-  }
-
-  cat("Device:", x$device, "\n")
 
   invisible(x)
 }

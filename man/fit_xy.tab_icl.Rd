@@ -4,7 +4,7 @@
 \alias{fit_xy.tab_icl}
 \title{Fit a TabICL model with xy interface}
 \usage{
-fit_xy.tab_icl(object, x, y, control = parsnip::control_fit(), ...)
+\method{fit_xy}{tab_icl}(object, x, y, control = parsnip::control_fit(), ...)
 }
 \arguments{
 \item{object}{A model specification}

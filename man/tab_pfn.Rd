@@ -8,8 +8,7 @@
 tab_pfn(
   mode = "unknown",
   engine = "tabpfn",
-  N_ensemble_configurations = 8,
-  max_len_feature_basis = 1024,
+  n_estimators = 8,
   device = "auto",
   ...
 )
@@ -17,9 +16,9 @@ tab_pfn(
 \method{update}{tab_pfn}(
   object,
   parameters = NULL,
-  N_ensemble_configurations = NULL,
-  max_len_feature_basis = NULL,
+  n_estimators = NULL,
   device = NULL,
+  N_ensemble_configurations = NULL,
   fresh = FALSE,
   ...
 )
@@ -29,9 +28,7 @@ tab_pfn(
 
 \item{engine}{A single character string specifying the computational engine. For TabPFN, this is always "tabpfn"}
 
-\item{N_ensemble_configurations}{Number of ensemble configurations (integer)}
-
-\item{max_len_feature_basis}{Maximum length of feature basis (integer)}
+\item{n_estimators}{Number of estimators in the ensemble (integer)}
 
 \item{device}{Device to use: "auto", "cpu", or "cuda"}
 

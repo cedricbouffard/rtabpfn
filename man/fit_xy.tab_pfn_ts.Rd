@@ -4,7 +4,7 @@
 \alias{fit_xy.tab_pfn_ts}
 \title{Fit a TabPFN Time Series model with xy interface}
 \usage{
-fit_xy.tab_pfn_ts(object, x, y = NULL, control = parsnip::control_fit(), ...)
+\method{fit_xy}{tab_pfn_ts}(object, x, y = NULL, control = parsnip::control_fit(), ...)
 }
 \arguments{
 \item{object}{A model specification}

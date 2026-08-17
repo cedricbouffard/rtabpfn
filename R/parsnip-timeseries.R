@@ -280,6 +280,7 @@ fit_tabpfn_ts <- function(model_spec, data, ...) {
 #' @param ... Additional arguments
 #'
 #' @return A fitted model object
+#' @method fit_xy tab_pfn_ts
 #' @export
 fit_xy.tab_pfn_ts <- function(object, x, y = NULL, control = parsnip::control_fit(), ...) {
   rtabpfn:::ensure_python_env()

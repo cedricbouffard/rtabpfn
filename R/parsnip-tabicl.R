@@ -210,10 +210,18 @@ fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::
     x_train <- mold$predictors
     y_train <- mold$outcomes[[1]]
   } else {
-    # XY interface
-    mold <- hardhat::mold(data[[1]], data[[2]])
-    x_train <- mold$predictors
-    y_train <- mold$outcomes[[1]]
+    dots <- list(...)
+    if (!is.null(dots$x) && !is.null(dots$y)) {
+      # XY interface passed via x = / y =
+      return(fit_xy.tab_icl(object = object, x = dots$x, y = dots$y,
+                            control = control))
+    }
+    if (!is.null(data)) {
+      # XY interface passed via data = list(x, y)
+      return(fit_xy.tab_icl(object = object, x = data[[1]], y = data[[2]],
+                            control = control))
+    }
+    stop("TabICL fit() requires either a formula and data, or x and y.")
   }
 
   # Get model arguments
@@ -247,8 +255,6 @@ fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::
         verbose = verbose
       )
 
-      class(model) <- c("tab_icl")
-
     } else if (object$mode == "regression") {
       # Fit regression model
       model <- rtabpfn::tab_icl_regression(
@@ -262,8 +268,6 @@ fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::
         random_state = random_state,
         verbose = verbose
       )
-
-      class(model) <- c("tab_icl")
     } else {
       stop("TabICL mode must be 'classification' or 'regression'")
     }
@@ -299,6 +303,7 @@ fit.tab_icl <- function(object, formula = NULL, data = NULL, control = parsnip::
 #' @param ... Additional arguments
 #'
 #' @return A fitted model object
+#' @method fit_xy tab_icl
 #' @export
 fit_xy.tab_icl <- function(object, x, y, control = parsnip::control_fit(), ...) {
   rtabpfn:::ensure_python_env()
@@ -338,8 +343,6 @@ fit_xy.tab_icl <- function(object, x, y, control = parsnip::control_fit(), ...) 
         verbose = verbose
       )
 
-      class(model) <- c("tab_icl")
-
     } else if (object$mode == "regression") {
       # Fit regression model
       model <- rtabpfn::tab_icl_regression(
@@ -353,8 +356,6 @@ fit_xy.tab_icl <- function(object, x, y, control = parsnip::control_fit(), ...) 
         random_state = random_state,
         verbose = verbose
       )
-
-      class(model) <- c("tab_icl")
     } else {
       stop("TabICL mode must be 'classification' or 'regression'")
     }
