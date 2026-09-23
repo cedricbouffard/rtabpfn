@@ -910,6 +910,8 @@ check_tabpfn_client <- function(install = FALSE,
 #' @param install_time_series Logical. If TRUE, installs tabpfn-time-series for forecasting
 #' @param install_client Logical. If TRUE, installs tabpfn-client (required for
 #'   the cloud "thinking" endpoint).
+#' @param install_bayesian_optimization Logical. If TRUE, installs
+#'   tabpfn-extensions[bayesian_optimization] for Bayesian optimization.
 #' @param upgrade Logical. If TRUE, upgrades tabpfn to >= 9.0.0 (required for
 #'   TabPFN-3.5 and 3.5-Fast).
 #' @param disable_analytics Logical. If TRUE, disables PostHog analytics (default: TRUE)
@@ -947,6 +949,7 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
                           install_shap = FALSE, install_unsupervised = FALSE,
                           install_time_series = FALSE,
                           install_client = FALSE,
+                          install_bayesian_optimization = FALSE,
                           upgrade = FALSE,
                           disable_analytics = TRUE, setup_gpu = TRUE,
                           force_gpu = FALSE, cuda_version = NULL) {
@@ -1196,6 +1199,24 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
       })
     } else {
       message("tabpfn-client already installed.")
+    }
+  }
+
+  # Optionally install tabpfn-extensions[bayesian_optimization]
+  if (install_bayesian_optimization) {
+    has_bo <- reticulate::py_module_available("tabpfn_extensions.bayesian_optimization")
+
+    if (!has_bo) {
+      message("Installing tabpfn-extensions[bayesian_optimization]...")
+      tryCatch({
+        .rtabpfn_pip_install("tabpfn-extensions[bayesian_optimization]")
+        message("tabpfn-extensions[bayesian_optimization] installed successfully!")
+      }, error = function(e) {
+        warning("Failed to install tabpfn-extensions[bayesian_optimization]: ", e$message)
+        message("You can install it manually with: pip install 'tabpfn-extensions[bayesian_optimization]'")
+      })
+    } else {
+      message("tabpfn-extensions[bayesian_optimization] already installed.")
     }
   }
 

@@ -12,6 +12,7 @@ setup_tabpfn(
   install_unsupervised = FALSE,
   install_time_series = FALSE,
   install_client = FALSE,
+  install_bayesian_optimization = FALSE,
   upgrade = FALSE,
   disable_analytics = TRUE,
   setup_gpu = TRUE,
@@ -34,6 +35,9 @@ setup_tabpfn(
 
 \item{install_client}{Logical. If TRUE, installs tabpfn-client (required for
 the cloud "thinking" endpoint).}
+
+\item{install_bayesian_optimization}{Logical. If TRUE, installs
+tabpfn-extensions[bayesian_optimization] for Bayesian optimization.}
 
 \item{upgrade}{Logical. If TRUE, upgrades tabpfn to >= 9.0.0 (required for
 TabPFN-3.5 and 3.5-Fast).}
