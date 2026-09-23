@@ -12,6 +12,11 @@ NULL
 #' @param engine A single character string specifying the computational engine. For TabPFN, this is always "tabpfn"
 #' @param n_estimators Number of estimators in the ensemble (integer)
 #' @param device Device to use: "auto", "cpu", or "cuda"
+#' @param model_version Model version to use: "auto", "3.5", "3.5-fast", "3",
+#'   "2.6", "2.5", or "2". Use "3.5-fast" for the Fast checkpoint (local) and
+#'   "3.5" for the base 3.5 model.
+#' @param thinking_mode Logical. If TRUE, use the cloud "thinking" endpoint
+#'   (requires tabpfn-client and a TABPFN_TOKEN).
 #' @param ... Additional engine-specific arguments
 #'
 #' @return A model specification object
@@ -26,21 +31,30 @@ NULL
 #'   set_engine("tabpfn") %>%
 #'   fit(mpg ~ ., data = mtcars)
 #'
-#' # Classification model
-#' tab_pfn_cls_spec <- tab_pfn(mode = "classification") %>%
+#' # Classification with the Fast checkpoint
+#' tab_pfn_fast_spec <- tab_pfn(mode = "classification", model_version = "3.5-fast") %>%
 #'   set_engine("tabpfn") %>%
 #'   fit(Species ~ ., data = iris)
+#'
+#' # Cloud thinking mode
+#' tab_pfn_thinking_spec <- tab_pfn(mode = "regression", thinking_mode = TRUE) %>%
+#'   set_engine("tabpfn") %>%
+#'   fit(mpg ~ ., data = mtcars)
 #' }
 tab_pfn <- function(
     mode = "unknown",
     engine = "tabpfn",
     n_estimators = 8,
     device = "auto",
+    model_version = "auto",
+    thinking_mode = FALSE,
     ...
 ) {
   args <- list(
     n_estimators = rlang::enquo(n_estimators),
     device = rlang::enquo(device),
+    model_version = rlang::enquo(model_version),
+    thinking_mode = rlang::enquo(thinking_mode),
     ...
   )
 
@@ -70,7 +84,8 @@ tab_pfn <- function(
 #' @export
 #' @rdname tab_pfn
 update.tab_pfn <- function(object, parameters = NULL, n_estimators = NULL,
-                            device = NULL, N_ensemble_configurations = NULL,
+                            device = NULL, model_version = NULL,
+                            thinking_mode = NULL, N_ensemble_configurations = NULL,
                             fresh = FALSE, ...) {
   parsnip::update_dot_check(...)
 
@@ -78,6 +93,8 @@ update.tab_pfn <- function(object, parameters = NULL, n_estimators = NULL,
     object$args <- list(
       n_estimators = rlang::enquo(n_estimators),
       device = rlang::enquo(device),
+      model_version = rlang::enquo(model_version),
+      thinking_mode = rlang::enquo(thinking_mode),
       N_ensemble_configurations = rlang::enquo(N_ensemble_configurations)
     )
   } else {
@@ -86,6 +103,12 @@ update.tab_pfn <- function(object, parameters = NULL, n_estimators = NULL,
     }
     if (!is.null(device)) {
       object$args$device <- rlang::enquo(device)
+    }
+    if (!is.null(model_version)) {
+      object$args$model_version <- rlang::enquo(model_version)
+    }
+    if (!is.null(thinking_mode)) {
+      object$args$thinking_mode <- rlang::enquo(thinking_mode)
     }
     if (!is.null(N_ensemble_configurations)) {
       object$args$N_ensemble_configurations <- rlang::enquo(N_ensemble_configurations)
@@ -212,6 +235,16 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
   # Convert to simple vectors if needed
   n_estimators <- rlang::eval_tidy(args$n_estimators)
   device <- rlang::eval_tidy(args$device)
+  model_version <- if (!is.null(args$model_version)) {
+    rlang::eval_tidy(args$model_version)
+  } else {
+    "auto"
+  }
+  thinking_mode <- if (!is.null(args$thinking_mode)) {
+    isTRUE(rlang::eval_tidy(args$thinking_mode))
+  } else {
+    FALSE
+  }
 
   # Suppress PostHog analytics warnings
   old_do_not_track <- Sys.getenv("DO_NOT_TRACK")
@@ -224,7 +257,9 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
         X = x_train,
         y = y_train,
         device = device,
-        n_estimators = n_estimators
+        n_estimators = n_estimators,
+        model_version = model_version,
+        thinking_mode = thinking_mode
       )
 
     } else if (object$mode == "regression") {
@@ -233,7 +268,9 @@ fit.tab_pfn <- function(object, formula = NULL, data = NULL, control = parsnip::
         X = x_train,
         y = y_train,
         device = device,
-        n_estimators = n_estimators
+        n_estimators = n_estimators,
+        model_version = model_version,
+        thinking_mode = thinking_mode
       )
     } else {
       stop("TabPFN mode must be 'classification' or 'regression'")
@@ -282,6 +319,16 @@ fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) 
   # Convert to simple vectors if needed
   n_estimators <- rlang::eval_tidy(args$n_estimators)
   device <- rlang::eval_tidy(args$device)
+  model_version <- if (!is.null(args$model_version)) {
+    rlang::eval_tidy(args$model_version)
+  } else {
+    "auto"
+  }
+  thinking_mode <- if (!is.null(args$thinking_mode)) {
+    isTRUE(rlang::eval_tidy(args$thinking_mode))
+  } else {
+    FALSE
+  }
 
   # Convert x to data frame if needed
   x_train <- as.data.frame(x)
@@ -298,7 +345,9 @@ fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) 
         X = x_train,
         y = y_train,
         device = device,
-        n_estimators = n_estimators
+        n_estimators = n_estimators,
+        model_version = model_version,
+        thinking_mode = thinking_mode
       )
 
     } else if (object$mode == "regression") {
@@ -307,7 +356,9 @@ fit_xy.tab_pfn <- function(object, x, y, control = parsnip::control_fit(), ...) 
         X = x_train,
         y = y_train,
         device = device,
-        n_estimators = n_estimators
+        n_estimators = n_estimators,
+        model_version = model_version,
+        thinking_mode = thinking_mode
       )
     } else {
       stop("TabPFN mode must be 'classification' or 'regression'")

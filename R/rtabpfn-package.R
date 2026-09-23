@@ -155,11 +155,11 @@ tabpfn_license_instructions <- function() {
   paste0(
     "\n*** TABPFN LICENSE REQUIRED ***\n",
     "TabPFN requires a one-time license acceptance before it can download\n",
-    "the model weights for local inference.\n\n",
+    "the model weights for local inference (TabPFN-3, 3.5 and 3.5-Fast).\n\n",
     "To fix this:\n",
-    "  1. Open https://ux.priorlabs.ai in a browser and log in (or register)\n",
-    "  2. Accept the license at https://ux.priorlabs.ai/account/licenses\n",
-    "  3. Copy your API key from https://ux.priorlabs.ai/account\n",
+    "  1. Open https://platform.priorlabs.ai in a browser and log in (or register)\n",
+    "  2. Accept the license for the model version you use\n",
+    "  3. Copy your API key from https://platform.priorlabs.ai/account/api-keys\n",
     "  4. Set the TABPFN_TOKEN environment variable and restart R:\n",
     "       Windows:  setx TABPFN_TOKEN \"<your-api-key>\"\n",
     "       R:        Sys.setenv(TABPFN_TOKEN = \"<your-api-key>\")\n",
@@ -174,7 +174,7 @@ tabpfn_license_instructions <- function() {
 # Returns one of: "ok", "missing", "invalid", "license", "unreachable".
 tabpfn_token_status <- function(token = Sys.getenv("TABPFN_TOKEN"),
                                 timeout_sec = 5,
-                                license_version = "tabpfn-2.6-license-v1.0") {
+                                license_version = "tabpfn-3-5-license-v1.0") {
   if (!nzchar(token)) {
     return("missing")
   }
@@ -720,6 +720,32 @@ setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NU
 }
 
 
+# Install Python package(s) into the currently active Python interpreter.
+# Using the active interpreter (rather than reticulate virtualenv/conda
+# management) correctly targets custom venvs such as C:/venvs/tabpfn.
+.rtabpfn_pip_install <- function(packages) {
+  python <- tryCatch(reticulate::py_config()$python, error = function(e) NULL)
+  if (is.null(python) || !nzchar(python)) {
+    python <- tryCatch(reticulate::py_exe(), error = function(e) NULL)
+  }
+  if (is.null(python) || !nzchar(python)) {
+    stop("Could not determine the active Python interpreter.", call. = FALSE)
+  }
+  package_spec <- paste(shQuote(packages), collapse = " ")
+  cmd <- paste(shQuote(python), "-m", "pip", "install", "--upgrade", package_spec)
+  message("Using Python: ", python)
+  status <- system(cmd)
+  if (status != 0) {
+    stop(
+      "pip install failed for: ", paste(packages, collapse = ", "),
+      "\nYou can retry manually. Your active Python: ", python,
+      call. = FALSE
+    )
+  }
+  invisible(TRUE)
+}
+
+
 #' Check TabPFN Installation
 #'
 #' @description
@@ -727,6 +753,8 @@ setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NU
 #' and optionally install it if missing.
 #'
 #' @param install Logical. If TRUE, will attempt to install TabPFN if not found.
+#' @param upgrade Logical. If TRUE, upgrades TabPFN to >= 9.0.0 (required for
+#'   the TabPFN-3.5 and 3.5-Fast model versions).
 #' @param envname Name of the virtual environment to use
 #' @param method Installation method: "auto", "virtualenv", or "conda"
 #'
@@ -740,8 +768,12 @@ setup_torch <- function(envname = "tabpfn", force_gpu = FALSE, cuda_version = NU
 #'
 #' # Install if not available
 #' check_tabpfn(install = TRUE)
+#'
+#' # Upgrade to TabPFN >= 9.0.0 (for 3.5 / 3.5-Fast)
+#' check_tabpfn(upgrade = TRUE)
 #' }
 check_tabpfn <- function(install = FALSE,
+                         upgrade = FALSE,
                          envname = "tabpfn",
                          method = "auto") {
 
@@ -749,19 +781,27 @@ check_tabpfn <- function(install = FALSE,
 
   has_tabpfn <- reticulate::py_module_available("tabpfn")
 
+  if (upgrade) {
+    message("Upgrading TabPFN to >= 9.0.0 (required for TabPFN-3.5)...")
+
+    tryCatch({
+      .rtabpfn_pip_install("tabpfn>=9.0.0")
+      message("TabPFN upgraded successfully!")
+    }, error = function(e) {
+      warning("Failed to upgrade TabPFN: ", e$message)
+      message("You can upgrade manually with: pip install --upgrade tabpfn")
+    })
+  }
+
   if (!has_tabpfn && install) {
     message("TabPFN not found. Installing...")
 
-    # Create virtual environment if it doesn't exist
-    if (!envname %in% reticulate::virtualenv_list()) {
-      reticulate::virtualenv_create(envname, python = NULL)
-    }
-
-    # Use the virtual environment
-    reticulate::use_virtualenv(envname, required = FALSE)
-
-    # Install TabPFN
-    reticulate::py_install("tabpfn", envname = envname, method = method, pip = TRUE)
+    tryCatch({
+      .rtabpfn_pip_install("tabpfn")
+      has_tabpfn <- reticulate::py_module_available("tabpfn")
+    }, error = function(e) {
+      warning("Failed to install TabPFN: ", e$message)
+    })
 
     # Verify installation
     # Use py_module_available which is safer than direct import
@@ -803,6 +843,59 @@ check_tabpfn <- function(install = FALSE,
 }
 
 
+#' Check TabPFN Client (cloud) Installation
+#'
+#' @description
+#' Helper function to check if the cloud TabPFN client (`tabpfn-client`) is
+#' installed in the Python environment and optionally install it if missing.
+#' The client is required for the "thinking" endpoint (Thinking mode). It also
+#' needs a valid `TABPFN_TOKEN` to authenticate against the hosted API.
+#'
+#' @param install Logical. If TRUE, will attempt to install tabpfn-client if not found.
+#' @param envname Name of the virtual environment to use
+#' @param method Installation method: "auto", "virtualenv", or "conda"
+#'
+#' @return Logical indicating if tabpfn-client is available
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Check if the cloud client is available
+#' check_tabpfn_client()
+#'
+#' # Install if not available
+#' check_tabpfn_client(install = TRUE)
+#' }
+check_tabpfn_client <- function(install = FALSE,
+                                envname = "tabpfn",
+                                method = "auto") {
+
+  rtabpfn:::ensure_python_env()
+
+  has_client <- reticulate::py_module_available("tabpfn_client")
+
+  if (!has_client && install) {
+    message("tabpfn-client not found. Installing...")
+
+    tryCatch({
+      .rtabpfn_pip_install("tabpfn-client")
+      has_client <- reticulate::py_module_available("tabpfn_client")
+    }, error = function(e) {
+      warning("Failed to install tabpfn-client: ", e$message)
+      message("You can install it manually with: pip install tabpfn-client")
+    })
+
+    if (has_client) {
+      message("tabpfn-client installed successfully!")
+    } else {
+      warning("Failed to install tabpfn-client. Please install manually.")
+    }
+  }
+
+  invisible(has_client)
+}
+
+
 #' Configure TabPFN Python Environment
 #'
 #' @description
@@ -815,6 +908,10 @@ check_tabpfn <- function(install = FALSE,
 #' @param install_shap Logical. If TRUE, installs tabpfn-extensions for SHAP support
 #' @param install_unsupervised Logical. If TRUE, installs tabpfn-extensions unsupervised module
 #' @param install_time_series Logical. If TRUE, installs tabpfn-time-series for forecasting
+#' @param install_client Logical. If TRUE, installs tabpfn-client (required for
+#'   the cloud "thinking" endpoint).
+#' @param upgrade Logical. If TRUE, upgrades tabpfn to >= 9.0.0 (required for
+#'   TabPFN-3.5 and 3.5-Fast).
 #' @param disable_analytics Logical. If TRUE, disables PostHog analytics (default: TRUE)
 #' @param setup_gpu Logical. If TRUE, attempts to setup GPU support (default: TRUE)
 #' @param force_gpu Logical. If TRUE, forces GPU installation even if not detected
@@ -849,6 +946,8 @@ check_tabpfn <- function(install = FALSE,
 setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
                           install_shap = FALSE, install_unsupervised = FALSE,
                           install_time_series = FALSE,
+                          install_client = FALSE,
+                          upgrade = FALSE,
                           disable_analytics = TRUE, setup_gpu = TRUE,
                           force_gpu = FALSE, cuda_version = NULL) {
 
@@ -1021,8 +1120,12 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
     }
   }
 
-  # Check and install TabPFN
-  check_tabpfn(install = TRUE, envname = envname)
+  # Check and install TabPFN (optionally upgrade to 9.0.0 for 3.5 / 3.5-Fast)
+  if (upgrade) {
+    check_tabpfn(upgrade = TRUE, envname = envname, method = "auto")
+  } else {
+    check_tabpfn(install = TRUE, envname = envname)
+  }
 
   # Optionally install tabpfn-extensions for SHAP
   if (install_shap) {
@@ -1075,6 +1178,24 @@ setup_tabpfn <- function(python_path = NULL, envname = "tabpfn", force = FALSE,
       })
     } else {
       message("tabpfn-time-series already installed.")
+    }
+  }
+
+  # Optionally install tabpfn-client for the cloud "thinking" endpoint
+  if (install_client) {
+    has_client <- reticulate::py_module_available("tabpfn_client")
+
+    if (!has_client) {
+      message("Installing tabpfn-client for the cloud 'thinking' endpoint...")
+      tryCatch({
+        .rtabpfn_pip_install("tabpfn-client")
+        message("tabpfn-client installed successfully!")
+      }, error = function(e) {
+        warning("Failed to install tabpfn-client: ", e$message)
+        message("You can install it manually with: pip install tabpfn-client")
+      })
+    } else {
+      message("tabpfn-client already installed.")
     }
   }
 

@@ -4,7 +4,21 @@
 \alias{tab_pfn_classification}
 \title{Train a TabPFN classification model}
 \usage{
-tab_pfn_classification(X, y, device = "auto", test_size = 0.33, ...)
+tab_pfn_classification(
+  X,
+  y,
+  device = "auto",
+  test_size = 0.33,
+  model_version = "auto",
+  thinking_mode = FALSE,
+  thinking_effort = NULL,
+  thinking_timeout_s = NULL,
+  thinking_metric = NULL,
+  group_col = NULL,
+  time_col = NULL,
+  group_time_col = NULL,
+  ...
+)
 }
 \arguments{
 \item{X}{Predictor data frame or matrix}
@@ -14,6 +28,28 @@ tab_pfn_classification(X, y, device = "auto", test_size = 0.33, ...)
 \item{device}{Device to use: "auto", "cpu", or "cuda"}
 
 \item{test_size}{Proportion of data to use for internal validation}
+
+\item{model_version}{Model version to use. One of "auto" (default), "3.5",
+"3.5-fast", "3", "2.6", "2.5", or "2". On the local OSS package,
+"3.5" selects the TabPFN-3.5 checkpoint and "3.5-fast" selects the
+TabPFN-3.5-Fast (alpha) checkpoint. Requires tabpfn >= 9.0.0.}
+
+\item{thinking_mode}{Logical. If TRUE, route to the cloud "thinking" endpoint
+(requires tabpfn-client and a TABPFN_TOKEN). Not available in the local
+OSS package.}
+
+\item{thinking_effort}{Effort level for thinking mode: "medium" (default) or
+"high". Setting this also enables thinking mode.}
+
+\item{thinking_timeout_s}{Optional wall-clock budget (seconds) for thinking fits.}
+
+\item{thinking_metric}{Metric to optimize during thinking (e.g. "accuracy", "roc_auc").}
+
+\item{group_col}{Column(s) identifying groups of related rows (thinking only).}
+
+\item{time_col}{Column holding time (thinking only).}
+
+\item{group_time_col}{Temporal column within each group (thinking only).}
 
 \item{...}{Additional arguments passed to TabPFNClassifier}
 }

@@ -64,6 +64,70 @@ Verify unsupervised extension is available:
 check_unsupervised_available()  # Returns TRUE if available
 ```
 
+## TabPFN 3.5, Fast and Thinking
+
+TabPFN 3.5 is available via `model_version = "3.5"` and its faster variant via
+`model_version = "3.5-fast"`. Both run locally and require tabpfn >= 9.0.0, which
+the package can install for you:
+
+```r
+# Upgrade the local tabpfn package and install the cloud client
+setup_tabpfn(upgrade = TRUE, install_client = TRUE)
+```
+
+### Fast endpoint (local)
+
+```r
+model <- tab_pfn_regression(X, y, model_version = "3.5-fast")
+preds <- predict(model, X)
+
+model_cls <- tab_pfn_classification(X, y_cls, model_version = "3.5")
+preds_cls <- predict(model_cls, X, type = "class")
+```
+
+### Thinking endpoint (cloud)
+
+The Thinking endpoint runs on Prior Labs servers and is not available in the
+local open-source package. It requires `tabpfn-client` and a valid
+`TABPFN_TOKEN` (set it with `Sys.setenv(TABPFN_TOKEN = "<api-key>")`).
+
+```r
+# Thinking mode (cloud), with optional effort / metric knobs
+model <- tab_pfn_regression(
+  X, y,
+  thinking_mode = TRUE,
+  thinking_effort = "high",
+  thinking_metric = "rmse"
+)
+preds <- predict(model, X)
+
+# Classification thinking mode
+model_cls <- tab_pfn_classification(
+  X, y_cls,
+  thinking_mode = TRUE,
+  thinking_metric = "roc_auc"
+)
+preds_cls <- predict(model_cls, X, type = "class")
+```
+
+With tidymodels, pass `model_version` or `thinking_mode` to `tab_pfn()`:
+
+```r
+tab_pfn(mode = "regression", model_version = "3.5-fast") %>%
+  set_engine("tabpfn") %>%
+  fit(mpg ~ ., data = mtcars)
+
+tab_pfn(mode = "regression", thinking_mode = TRUE) %>%
+  set_engine("tabpfn") %>%
+  fit(mpg ~ ., data = mtcars)
+```
+
+> Note: Thinking mode fits are slower and draw from a separate cloud budget.
+> The thinking endpoint produces point predictions only — `type = "quantiles"`
+> and `type = "conf_int"` are not available for thinking-fitted models.
+> The local Fast checkpoint needs a one-time license acceptance before the
+> weights download.
+
 ## Quick Start
 
 ### Regression with Quantile Predictions

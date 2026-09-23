@@ -4,10 +4,18 @@
 \alias{check_tabpfn}
 \title{Check TabPFN Installation}
 \usage{
-check_tabpfn(install = FALSE, envname = "tabpfn", method = "auto")
+check_tabpfn(
+  install = FALSE,
+  upgrade = FALSE,
+  envname = "tabpfn",
+  method = "auto"
+)
 }
 \arguments{
 \item{install}{Logical. If TRUE, will attempt to install TabPFN if not found.}
+
+\item{upgrade}{Logical. If TRUE, upgrades TabPFN to >= 9.0.0 (required for
+the TabPFN-3.5 and 3.5-Fast model versions).}
 
 \item{envname}{Name of the virtual environment to use}
 
@@ -27,5 +35,8 @@ check_tabpfn()
 
 # Install if not available
 check_tabpfn(install = TRUE)
+
+# Upgrade to TabPFN >= 9.0.0 (for 3.5 / 3.5-Fast)
+check_tabpfn(upgrade = TRUE)
 }
 }

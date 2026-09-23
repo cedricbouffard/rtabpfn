@@ -11,6 +11,8 @@ setup_tabpfn(
   install_shap = FALSE,
   install_unsupervised = FALSE,
   install_time_series = FALSE,
+  install_client = FALSE,
+  upgrade = FALSE,
   disable_analytics = TRUE,
   setup_gpu = TRUE,
   force_gpu = FALSE,
@@ -29,6 +31,12 @@ setup_tabpfn(
 \item{install_unsupervised}{Logical. If TRUE, installs tabpfn-extensions unsupervised module}
 
 \item{install_time_series}{Logical. If TRUE, installs tabpfn-time-series for forecasting}
+
+\item{install_client}{Logical. If TRUE, installs tabpfn-client (required for
+the cloud "thinking" endpoint).}
+
+\item{upgrade}{Logical. If TRUE, upgrades tabpfn to >= 9.0.0 (required for
+TabPFN-3.5 and 3.5-Fast).}
 
 \item{disable_analytics}{Logical. If TRUE, disables PostHog analytics (default: TRUE)}
 

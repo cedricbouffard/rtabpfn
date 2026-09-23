@@ -160,6 +160,10 @@ predict.tab_pfn <- function(object,
 
       # Handle different output types
       if (output_type == "full") {
+        # Cloud client returns the full predictive distribution as a dict.
+        if (identical(object$backend, "client")) {
+          return(reticulate::py_to_r(preds))
+        }
         # Full distribution - return all samples
         if (is.matrix(preds_r)) {
           pred_df <- as.data.frame(preds_r)
@@ -214,53 +218,258 @@ predict.tab_pfn <- function(object,
 }
 
 
+# --- TabPFN 3.5 model version & endpoint helpers -----------------------------
+
+# Map an R model_version string to a tabpfn ModelVersion enum member name (OSS).
+.model_version_member <- function(model_version) {
+  switch(model_version,
+    "2" = "V2",
+    "2.5" = "V2_5",
+    "2.6" = "V2_6",
+    "3" = "V3",
+    "3.5" = "V3_5",
+    "3.5-fast" = "V3_5_FAST",
+    stop(
+      "Unknown model_version: '", model_version, "'. ",
+      "Valid values: \"2\", \"2.5\", \"2.6\", \"3\", \"3.5\", \"3.5-fast\".",
+      call. = FALSE
+    )
+  )
+}
+
+# Map an R model_version string to a tabpfn-client version string (cloud).
+.client_model_version <- function(model_version) {
+  switch(model_version,
+    "3.5" = "v3.5",
+    "3.5-fast" = "v3.5-fast",
+    "3" = "v3",
+    "2.6" = "v2.6",
+    "2.5" = "v2.5",
+    "2" = "v2",
+    stop(
+      "Unknown model_version: '", model_version, "'. ",
+      "Valid values for the cloud client: \"3.5\", \"3.5-fast\", \"3\", \"2.6\", \"2.5\".",
+      call. = FALSE
+    )
+  )
+}
+
+# Whether the user requested the cloud "thinking" endpoint.
+.thinking_requested <- function(thinking_mode, thinking_effort,
+                                      thinking_timeout_s, thinking_metric,
+                                      group_col, time_col, group_time_col) {
+  isTRUE(thinking_mode) ||
+    !is.null(thinking_effort) ||
+    !is.null(thinking_timeout_s) ||
+    !is.null(thinking_metric) ||
+    !is.null(group_col) ||
+    !is.null(time_col) ||
+    !is.null(group_time_col)
+}
+
+.tabpfn_version_string <- function(tabpfn) {
+  tryCatch(as.character(tabpfn$`__version__`), error = function(e) "unknown")
+}
+
+# Raise a friendly error for license/token failures (local or cloud).
+.tabpfn_license_error <- function(msg) {
+  if (grepl("license|token|401|403|authentication|api[ ]?key",
+            msg, ignore.case = TRUE)) {
+    stop(
+      "TabPFN license/token error: ", msg, "\n",
+      rtabpfn:::tabpfn_license_instructions(),
+      call. = FALSE
+    )
+  }
+  stop(msg, call. = FALSE)
+}
+
+.import_tabpfn_client <- function() {
+  if (!reticulate::py_module_available("tabpfn_client")) {
+    stop(
+      "The cloud TabPFN client ('tabpfn-client') is not installed. ",
+      "Thinking mode requires it. Run setup_tabpfn(install_client = TRUE).",
+      call. = FALSE
+    )
+  }
+  reticulate::import("tabpfn_client", convert = FALSE)
+}
+
+.build_client_kwargs <- function(n_estimators, thinking, thinking_effort,
+                                 thinking_timeout_s, thinking_metric,
+                                 group_col, time_col, group_time_col) {
+  kwargs <- list()
+  if (!is.null(n_estimators)) kwargs$n_estimators <- n_estimators
+  if (isTRUE(thinking)) kwargs$thinking_mode <- TRUE
+  if (!is.null(thinking_effort)) kwargs$thinking_effort <- thinking_effort
+  if (!is.null(thinking_timeout_s)) kwargs$thinking_timeout_s <- thinking_timeout_s
+  if (!is.null(thinking_metric)) kwargs$thinking_metric <- thinking_metric
+  if (!is.null(group_col)) {
+    kwargs$group_col <- if (length(group_col) == 1) group_col else as.list(group_col)
+  }
+  if (!is.null(time_col)) kwargs$time_col <- time_col
+  if (!is.null(group_time_col)) kwargs$group_time_col <- group_time_col
+  kwargs
+}
+
+.build_local_regressor <- function(model_version, device, n_estimators, dots) {
+  tabpfn <- reticulate::import("tabpfn", convert = FALSE)
+  ctor_args <- list(device = device)
+  if (!is.null(n_estimators)) ctor_args$n_estimators <- n_estimators
+  ctor_args <- c(ctor_args, dots)
+
+  if (is.null(model_version) || identical(model_version, "auto")) {
+    return(do.call(tabpfn$TabPFNRegressor, ctor_args))
+  }
+
+  member <- .model_version_member(model_version)
+  mv <- tryCatch(
+    reticulate::py_get_attr(tabpfn$constants$ModelVersion, member),
+    error = function(e) {
+      stop(
+        "Model version '", model_version, "' requires tabpfn >= 9.0.0 ",
+        "(installed: ", .tabpfn_version_string(tabpfn), "). ",
+        "Run setup_tabpfn(upgrade = TRUE).",
+        call. = FALSE
+      )
+    }
+  )
+  do.call(tabpfn$TabPFNRegressor$create_default_for_version, c(list(mv), ctor_args))
+}
+
+.build_local_classifier <- function(model_version, device, n_estimators, dots) {
+  tabpfn <- reticulate::import("tabpfn", convert = FALSE)
+  ctor_args <- list(device = device)
+  if (!is.null(n_estimators)) ctor_args$n_estimators <- n_estimators
+  ctor_args <- c(ctor_args, dots)
+
+  if (is.null(model_version) || identical(model_version, "auto")) {
+    return(do.call(tabpfn$TabPFNClassifier, ctor_args))
+  }
+
+  member <- .model_version_member(model_version)
+  mv <- tryCatch(
+    reticulate::py_get_attr(tabpfn$constants$ModelVersion, member),
+    error = function(e) {
+      stop(
+        "Model version '", model_version, "' requires tabpfn >= 9.0.0 ",
+        "(installed: ", .tabpfn_version_string(tabpfn), "). ",
+        "Run setup_tabpfn(upgrade = TRUE).",
+        call. = FALSE
+      )
+    }
+  )
+  do.call(tabpfn$TabPFNClassifier$create_default_for_version, c(list(mv), ctor_args))
+}
+
+.build_client_regressor <- function(model_version, n_estimators, thinking,
+                                    thinking_effort, thinking_timeout_s,
+                                    thinking_metric, group_col, time_col,
+                                    group_time_col, dots) {
+  client <- .import_tabpfn_client()
+  kwargs <- .build_client_kwargs(n_estimators, thinking, thinking_effort,
+                                 thinking_timeout_s, thinking_metric,
+                                 group_col, time_col, group_time_col)
+  if (is.null(model_version) || identical(model_version, "auto")) {
+    return(do.call(client$TabPFNRegressor, c(kwargs, dots)))
+  }
+  ver <- .client_model_version(model_version)
+  do.call(client$TabPFNRegressor$create_default_for_version, c(list(ver), c(kwargs, dots)))
+}
+
+.build_client_classifier <- function(model_version, n_estimators, thinking,
+                                     thinking_effort, thinking_timeout_s,
+                                     thinking_metric, group_col, time_col,
+                                     group_time_col, dots) {
+  client <- .import_tabpfn_client()
+  kwargs <- .build_client_kwargs(n_estimators, thinking, thinking_effort,
+                                 thinking_timeout_s, thinking_metric,
+                                 group_col, time_col, group_time_col)
+  if (is.null(model_version) || identical(model_version, "auto")) {
+    return(do.call(client$TabPFNClassifier, c(kwargs, dots)))
+  }
+  ver <- .client_model_version(model_version)
+  do.call(client$TabPFNClassifier$create_default_for_version, c(list(ver), c(kwargs, dots)))
+}
+
+
 #' Train a TabPFN regression model with enhanced predict options
 #'
 #' @param X Predictor data frame or matrix
 #' @param y Response vector
 #' @param device Device to use: "auto", "cpu", or "cuda"
 #' @param test_size Proportion of data to use for internal validation
+#' @param model_version Model version to use. One of "auto" (default), "3.5",
+#'   "3.5-fast", "3", "2.6", "2.5", or "2". On the local OSS package,
+#'   "3.5" selects the TabPFN-3.5 checkpoint and "3.5-fast" selects the
+#'   TabPFN-3.5-Fast (alpha) checkpoint. Requires tabpfn >= 9.0.0.
+#' @param thinking_mode Logical. If TRUE, route to the cloud "thinking" endpoint
+#'   (requires tabpfn-client and a TABPFN_TOKEN). Not available in the local
+#'   OSS package.
+#' @param thinking_effort Effort level for thinking mode: "medium" (default) or
+#'   "high". Setting this also enables thinking mode.
+#' @param thinking_timeout_s Optional wall-clock budget (seconds) for thinking fits.
+#' @param thinking_metric Metric to optimize during thinking (e.g. "rmse", "mae").
+#' @param group_col Column(s) identifying groups of related rows (thinking only).
+#' @param time_col Column holding time (thinking only).
+#' @param group_time_col Temporal column within each group (thinking only).
 #' @param ... Additional arguments passed to TabPFNRegressor
 #'
 #' @return A tab_pfn model object with mode = "regression"
 #' @export
-tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33, ...) {
+tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33,
+                               model_version = "auto",
+                               thinking_mode = FALSE,
+                               thinking_effort = NULL,
+                               thinking_timeout_s = NULL,
+                               thinking_metric = NULL,
+                               group_col = NULL,
+                               time_col = NULL,
+                               group_time_col = NULL,
+                               ...) {
 
   rtabpfn:::ensure_python_env()
 
-  # Load Python module
-  tabpfn <- reticulate::import("tabpfn", convert = FALSE)
+  dots <- list(...)
+  n_estimators <- dots$n_estimators
+  if (!is.null(n_estimators)) {
+    n_estimators <- as.integer(n_estimators)
+  }
+  dots$n_estimators <- NULL
 
-  # Create regressor and fit, with friendly license/token diagnostics
-  tryCatch({
-    dots <- list(...)
-    n_estimators <- dots$n_estimators
-    if (!is.null(n_estimators)) {
-      n_estimators <- as.integer(n_estimators)
+  use_thinking <- .thinking_requested(
+    thinking_mode, thinking_effort, thinking_timeout_s, thinking_metric,
+    group_col, time_col, group_time_col
+  )
+  backend <- if (use_thinking) "client" else "local"
+
+  reg <- tryCatch({
+    if (use_thinking) {
+      .build_client_regressor(model_version, n_estimators, TRUE,
+                              thinking_effort, thinking_timeout_s, thinking_metric,
+                              group_col, time_col, group_time_col, dots)
+    } else {
+      .build_local_regressor(model_version, device, n_estimators, dots)
     }
-    dots$n_estimators <- NULL
-    ctor_args <- list(device = device)
-    if (!is.null(n_estimators)) {
-      ctor_args$n_estimators <- n_estimators
-    }
-    reg <- do.call(tabpfn$TabPFNRegressor, c(ctor_args, dots))
-    reg$fit(X, y)
   }, error = function(e) {
-    msg <- conditionMessage(e)
-    if (grepl("license|token|401|403|authentication", msg, ignore.case = TRUE)) {
-      stop(
-        "TabPFN license/token error: ", msg, "\n",
-        rtabpfn:::tabpfn_license_instructions(),
-        call. = FALSE
-      )
-    }
-    stop(e)
+    .tabpfn_license_error(conditionMessage(e))
+  })
+
+  fit_y <- if (use_thinking) reticulate::np_array(as.numeric(y)) else y
+
+  tryCatch({
+    reg$fit(X, fit_y)
+  }, error = function(e) {
+    .tabpfn_license_error(conditionMessage(e))
   })
 
   # Create model object
   model <- list(
     fit = reg,
     mode = "regression",
+    backend = backend,
+    model_version = model_version,
+    thinking_mode = use_thinking,
     predictor_names = colnames(X),
     outcome_name = if (is.data.frame(y)) colnames(y)[1] else NULL,
     test_size = test_size,
@@ -278,16 +487,36 @@ tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33, ...) {
 #' @param y Response vector (factor or character)
 #' @param device Device to use: "auto", "cpu", or "cuda"
 #' @param test_size Proportion of data to use for internal validation
+#' @param model_version Model version to use. One of "auto" (default), "3.5",
+#'   "3.5-fast", "3", "2.6", "2.5", or "2". On the local OSS package,
+#'   "3.5" selects the TabPFN-3.5 checkpoint and "3.5-fast" selects the
+#'   TabPFN-3.5-Fast (alpha) checkpoint. Requires tabpfn >= 9.0.0.
+#' @param thinking_mode Logical. If TRUE, route to the cloud "thinking" endpoint
+#'   (requires tabpfn-client and a TABPFN_TOKEN). Not available in the local
+#'   OSS package.
+#' @param thinking_effort Effort level for thinking mode: "medium" (default) or
+#'   "high". Setting this also enables thinking mode.
+#' @param thinking_timeout_s Optional wall-clock budget (seconds) for thinking fits.
+#' @param thinking_metric Metric to optimize during thinking (e.g. "accuracy", "roc_auc").
+#' @param group_col Column(s) identifying groups of related rows (thinking only).
+#' @param time_col Column holding time (thinking only).
+#' @param group_time_col Temporal column within each group (thinking only).
 #' @param ... Additional arguments passed to TabPFNClassifier
 #'
 #' @return A tab_pfn model object with mode = "classification"
 #' @export
-tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33, ...) {
+tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33,
+                                   model_version = "auto",
+                                   thinking_mode = FALSE,
+                                   thinking_effort = NULL,
+                                   thinking_timeout_s = NULL,
+                                   thinking_metric = NULL,
+                                   group_col = NULL,
+                                   time_col = NULL,
+                                   group_time_col = NULL,
+                                   ...) {
 
   rtabpfn:::ensure_python_env()
-
-# Load Python module
-  tabpfn <- reticulate::import("tabpfn", convert = FALSE)
 
   # Get levels
   if (is.factor(y)) {
@@ -296,36 +525,46 @@ tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33, ...)
     levels_vec <- unique(as.character(y))
   }
 
-# Create classifier and fit, with friendly license/token diagnostics
-  tryCatch({
-    dots <- list(...)
-    n_estimators <- dots$n_estimators
-    if (!is.null(n_estimators)) {
-      n_estimators <- as.integer(n_estimators)
+  dots <- list(...)
+  n_estimators <- dots$n_estimators
+  if (!is.null(n_estimators)) {
+    n_estimators <- as.integer(n_estimators)
+  }
+  dots$n_estimators <- NULL
+
+  use_thinking <- .thinking_requested(
+    thinking_mode, thinking_effort, thinking_timeout_s, thinking_metric,
+    group_col, time_col, group_time_col
+  )
+  backend <- if (use_thinking) "client" else "local"
+
+  clf <- tryCatch({
+    if (use_thinking) {
+      .build_client_classifier(model_version, n_estimators, TRUE,
+                               thinking_effort, thinking_timeout_s, thinking_metric,
+                               group_col, time_col, group_time_col, dots)
+    } else {
+      .build_local_classifier(model_version, device, n_estimators, dots)
     }
-    dots$n_estimators <- NULL
-    ctor_args <- list(device = device)
-    if (!is.null(n_estimators)) {
-      ctor_args$n_estimators <- n_estimators
-    }
-    clf <- do.call(tabpfn$TabPFNClassifier, c(ctor_args, dots))
-    clf$fit(X, y)
   }, error = function(e) {
-    msg <- conditionMessage(e)
-    if (grepl("license|token|401|403|authentication", msg, ignore.case = TRUE)) {
-      stop(
-        "TabPFN license/token error: ", msg, "\n",
-        rtabpfn:::tabpfn_license_instructions(),
-        call. = FALSE
-      )
-    }
-    stop(e)
+    .tabpfn_license_error(conditionMessage(e))
+  })
+
+  fit_y <- if (use_thinking) reticulate::np_array(as.character(y)) else y
+
+  tryCatch({
+    clf$fit(X, fit_y)
+  }, error = function(e) {
+    .tabpfn_license_error(conditionMessage(e))
   })
 
   # Create model object
   model <- list(
     fit = clf,
     mode = "classification",
+    backend = backend,
+    model_version = model_version,
+    thinking_mode = use_thinking,
     levels = levels_vec,
     predictor_names = colnames(X),
     outcome_name = if (is.data.frame(y)) colnames(y)[1] else NULL,
@@ -367,6 +606,13 @@ print.tab_pfn <- function(x, ...) {
     if (x$mode == "classification" && !is.null(x$levels)) {
       cat("Classes:", length(x$levels), "\n")
       cat(" ", paste(x$levels, collapse = ", "), "\n")
+    }
+
+    if (!is.null(x$model_version) && !identical(x$model_version, "auto")) {
+      cat("Model version:", x$model_version, "\n")
+    }
+    if (!is.null(x$backend)) {
+      cat("Backend:", x$backend, if (isTRUE(x$thinking_mode)) " (thinking)" else "", "\n", sep = "")
     }
 
     cat("Device:", x$device, "\n")

@@ -10,6 +10,8 @@ tab_pfn(
   engine = "tabpfn",
   n_estimators = 8,
   device = "auto",
+  model_version = "auto",
+  thinking_mode = FALSE,
   ...
 )
 
@@ -18,6 +20,8 @@ tab_pfn(
   parameters = NULL,
   n_estimators = NULL,
   device = NULL,
+  model_version = NULL,
+  thinking_mode = NULL,
   N_ensemble_configurations = NULL,
   fresh = FALSE,
   ...
@@ -31,6 +35,13 @@ tab_pfn(
 \item{n_estimators}{Number of estimators in the ensemble (integer)}
 
 \item{device}{Device to use: "auto", "cpu", or "cuda"}
+
+\item{model_version}{Model version to use: "auto", "3.5", "3.5-fast", "3",
+"2.6", "2.5", or "2". Use "3.5-fast" for the Fast checkpoint (local) and
+"3.5" for the base 3.5 model.}
+
+\item{thinking_mode}{Logical. If TRUE, use the cloud "thinking" endpoint
+(requires tabpfn-client and a TABPFN_TOKEN).}
 
 \item{...}{Additional engine-specific arguments}
 }
@@ -50,9 +61,14 @@ tab_pfn_reg_spec <- tab_pfn(mode = "regression") \%>\%
   set_engine("tabpfn") \%>\%
   fit(mpg ~ ., data = mtcars)
 
-# Classification model
-tab_pfn_cls_spec <- tab_pfn(mode = "classification") \%>\%
+# Classification with the Fast checkpoint
+tab_pfn_fast_spec <- tab_pfn(mode = "classification", model_version = "3.5-fast") \%>\%
   set_engine("tabpfn") \%>\%
   fit(Species ~ ., data = iris)
+
+# Cloud thinking mode
+tab_pfn_thinking_spec <- tab_pfn(mode = "regression", thinking_mode = TRUE) \%>\%
+  set_engine("tabpfn") \%>\%
+  fit(mpg ~ ., data = mtcars)
 }
 }
