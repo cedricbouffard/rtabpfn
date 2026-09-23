@@ -1,0 +1,109 @@
+---
+title: "The Fast Endpoint and Speed Comparison"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The Fast Endpoint and Speed Comparison}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+TabPFN-3.5 ships in several variants. The **Fast** checkpoint (`3.5-fast`) is a
+distilled model that delivers up to ~6x faster inference than the base `3.5`
+model, while keeping the same `fit`/`predict` workflow and the same prediction
+types (`numeric`, `quantiles`, `conf_int`). Select it with
+`model_version = "3.5-fast"`.
+
+This vignette benchmarks the base `3.5` and the `3.5-fast` endpoints on a small
+synthetic regression problem to give a feel for the speedup.
+
+> Requires `tabpfn >= 9.0.0`. Upgrade with `setup_tabpfn(upgrade = TRUE)`.
+
+```{r setup, include = FALSE}
+library(rtabpfn)
+
+if (requireNamespace("reticulate", quietly = TRUE)) {
+  try({
+    reticulate::py_run_string("import webbrowser; webbrowser.open = lambda *args, **kwargs: None")
+  }, silent = TRUE)
+}
+
+has_tabpfn <- tryCatch(check_tabpfn(), error = function(e) FALSE)
+has_v35 <- tryCatch({
+  numeric_version(reticulate::py_to_r(reticulate::import("tabpfn")$`__version__`)) >=
+    numeric_version("9.0.0")
+}, error = function(e) FALSE)
+
+is_ci <- Sys.getenv("CI") != "" || Sys.getenv("GITHUB_ACTIONS") == "true"
+knitr::opts_chunk$set(eval = has_tabpfn && has_v35 && !is_ci,
+                      message = FALSE, warning = FALSE)
+```
+
+## Data
+
+A synthetic non-linear regression problem — enough rows for the timing to be
+meaningful:
+
+```{r data}
+set.seed(1)
+n <- 1000
+p <- 8
+X <- as.data.frame(matrix(runif(n * p), ncol = p))
+names(X) <- paste0("x", seq_len(p))
+
+y <- sin(3 * X$x1) + 2 * X$x2 - 1.5 * X$x3^2 + rnorm(n, 0, 0.1)
+```
+
+## Benchmark
+
+Time `fit()` + `predict()` for the base `3.5` model and the `3.5-fast` model.
+A warm-up fit is included so the first call's one-off overhead (CUDA kernel
+compilation, model load) doesn't dominate the numbers:
+
+```{r benchmark}
+benchmark_endpoint <- function(model_version) {
+  # warm-up
+  tab_pfn_regression(X, y, model_version = model_version, device = "auto")
+
+  t <- system.time({
+    m <- tab_pfn_regression(X, y, model_version = model_version, device = "auto")
+    predict(m, X, type = "numeric")
+  })
+  t[["elapsed"]]
+}
+
+time_base <- benchmark_endpoint("3.5")
+time_fast <- benchmark_endpoint("3.5-fast")
+
+results <- data.frame(
+  Endpoint = c("3.5 (base)", "3.5-fast"),
+  Elapsed_s = round(c(time_base, time_fast), 3),
+  Relative = round(c(time_base, time_fast) / time_fast, 2)
+)
+
+knitr::kable(results, caption = "fit + predict elapsed time (1000 x 8 regression)")
+```
+
+The `Relative` column expresses each endpoint's time relative to Fast
+(`1.00`), so the base model's value is the observed speedup of using
+`3.5-fast`.
+
+## Predictions still match
+
+Fast isn't just faster — it returns the same prediction types:
+
+```{r preds}
+m_fast <- tab_pfn_regression(X, y, model_version = "3.5-fast", device = "auto")
+
+predict(m_fast, X, type = "numeric")
+predict(m_fast, X, type = "quantiles", quantiles = c(0.25, 0.5, 0.75))
+```
+
+## Notes
+
+- Timings scale with dataset size; the Fast advantage is most visible on larger
+  tables and repeated fits.
+- For the cloud "Thinking" endpoint (higher accuracy, point predictions only on
+  the hosted API), see `tab_pfn_regression(..., thinking_mode = TRUE)`.
+- A GPU is recommended for datasets past ~1000 rows.
