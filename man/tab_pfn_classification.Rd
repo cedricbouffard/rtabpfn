@@ -9,6 +9,7 @@ tab_pfn_classification(
   y,
   device = "auto",
   test_size = 0.33,
+  n_estimators = NULL,
   model_version = "auto",
   thinking_mode = FALSE,
   thinking_effort = NULL,
@@ -28,6 +29,10 @@ tab_pfn_classification(
 \item{device}{Device to use: "auto", "cpu", or "cuda"}
 
 \item{test_size}{Proportion of data to use for internal validation}
+
+\item{n_estimators}{Number of estimators in the TabPFN ensemble. `NULL`
+(default) uses the model's default (typically 8). More estimators improve
+robustness at the cost of slower fit/predict.}
 
 \item{model_version}{Model version to use. One of "auto" (default), "3.5",
 "3.5-fast", "3", "2.6", "2.5", or "2". On the local OSS package,

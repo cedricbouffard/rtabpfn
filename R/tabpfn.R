@@ -399,6 +399,9 @@ predict.tab_pfn <- function(object,
 #' @param y Response vector
 #' @param device Device to use: "auto", "cpu", or "cuda"
 #' @param test_size Proportion of data to use for internal validation
+#' @param n_estimators Number of estimators in the TabPFN ensemble. `NULL`
+#'   (default) uses the model's default (typically 8). More estimators improve
+#'   robustness at the cost of slower fit/predict.
 #' @param model_version Model version to use. One of "auto" (default), "3.5",
 #'   "3.5-fast", "3", "2.6", "2.5", or "2". On the local OSS package,
 #'   "3.5" selects the TabPFN-3.5 checkpoint and "3.5-fast" selects the
@@ -418,6 +421,7 @@ predict.tab_pfn <- function(object,
 #' @return A tab_pfn model object with mode = "regression"
 #' @export
 tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33,
+                               n_estimators = NULL,
                                model_version = "auto",
                                thinking_mode = FALSE,
                                thinking_effort = NULL,
@@ -431,11 +435,9 @@ tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33,
   rtabpfn:::ensure_python_env()
 
   dots <- list(...)
-  n_estimators <- dots$n_estimators
   if (!is.null(n_estimators)) {
     n_estimators <- as.integer(n_estimators)
   }
-  dots$n_estimators <- NULL
 
   use_thinking <- .thinking_requested(
     thinking_mode, thinking_effort, thinking_timeout_s, thinking_metric,
@@ -487,6 +489,9 @@ tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33,
 #' @param y Response vector (factor or character)
 #' @param device Device to use: "auto", "cpu", or "cuda"
 #' @param test_size Proportion of data to use for internal validation
+#' @param n_estimators Number of estimators in the TabPFN ensemble. `NULL`
+#'   (default) uses the model's default (typically 8). More estimators improve
+#'   robustness at the cost of slower fit/predict.
 #' @param model_version Model version to use. One of "auto" (default), "3.5",
 #'   "3.5-fast", "3", "2.6", "2.5", or "2". On the local OSS package,
 #'   "3.5" selects the TabPFN-3.5 checkpoint and "3.5-fast" selects the
@@ -506,6 +511,7 @@ tab_pfn_regression <- function(X, y, device = "auto", test_size = 0.33,
 #' @return A tab_pfn model object with mode = "classification"
 #' @export
 tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33,
+                                   n_estimators = NULL,
                                    model_version = "auto",
                                    thinking_mode = FALSE,
                                    thinking_effort = NULL,
@@ -526,11 +532,9 @@ tab_pfn_classification <- function(X, y, device = "auto", test_size = 0.33,
   }
 
   dots <- list(...)
-  n_estimators <- dots$n_estimators
   if (!is.null(n_estimators)) {
     n_estimators <- as.integer(n_estimators)
   }
-  dots$n_estimators <- NULL
 
   use_thinking <- .thinking_requested(
     thinking_mode, thinking_effort, thinking_timeout_s, thinking_metric,
