@@ -144,7 +144,9 @@ articles:
     contents:
     - shap
     - anomaly-detection
+    - bayesian-optimization
     - bayesian-optimization-tuning
+    - fast-endpoint
  
 news:
   one_page: false
