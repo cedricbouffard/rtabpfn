@@ -49,6 +49,15 @@ jobs:
             any::remotes
           needs: website
 
+      - name: Reuse pre-rendered articles
+        run: |
+          # The vignettes need the TabPFN model (weights + license), which is not
+          # available in CI, so their figures are pre-rendered and committed
+          # under docs/articles/. Backdate the sources so pkgdown's lazy build
+          # keeps the committed HTML instead of re-knitting code-only pages.
+          # Remember to rebuild docs/ locally when you change a vignette.
+          find vignettes -name '*.Rmd' -exec touch -d '2000-01-01T00:00:00Z' {} +
+
       - name: Build pkgdown site
         run: |
           Rscript -e 'options(pkgdown.internet = TRUE); pkgdown::build_site()'

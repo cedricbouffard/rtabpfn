@@ -34,7 +34,13 @@ if (requireNamespace("reticulate", quietly = TRUE)) {
 
 has_bo <- tryCatch(check_bayesian_optimization_available(), error = function(e) FALSE)
 is_ci <- Sys.getenv("CI") != "" || Sys.getenv("GITHUB_ACTIONS") == "true"
-knitr::opts_chunk$set(eval = has_bo && !is_ci, message = FALSE, warning = FALSE)
+
+# Run the optimizer live when the extension is available outside CI. Otherwise
+# the figures below reuse a precomputed optimization trace (shipped in
+# inst/extdata) so the vignette still renders without a configured model.
+run_live <- has_bo && !is_ci
+
+knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
 ```
 
 ## The black-box objective
@@ -80,24 +86,54 @@ grid <- expand.grid(k = 1:15, power = seq(0, 3, length.out = 40))
 grid$rmse <- mapply(function(k, p) knn_cv_rmse(k, p), grid$k, grid$power)
 ```
 
+```{r trace-loader, include = FALSE}
+bo_trace <- local({
+  path <- system.file("extdata", "bo_tuning_trace.rds", package = "rtabpfn")
+  if (!nzchar(path)) {
+    for (cand in c("inst/extdata/bo_tuning_trace.rds",
+                   "../inst/extdata/bo_tuning_trace.rds")) {
+      if (file.exists(cand)) {
+        path <- cand
+        break
+      }
+    }
+  }
+  if (!nzchar(path)) {
+    stop("Could not locate the precomputed Bayesian optimization trace.")
+  }
+  readRDS(path)
+})
+```
+
 ## Running TabPFN Bayesian optimization
 
 We search `k` in `[1, 15]` and `power` in `[0, 3]`, with 6 random initial points
 followed by 14 acquisition steps (20 evaluations total):
 
 ```{r run-bo}
-bo <- tab_pfn_bayesian_optimization(
-  fun      = objective,
-  bounds   = list(k = c(1, 15), power = c(0, 3)),
-  n_init   = 6,
-  n_iter   = 14,
-  maximize = FALSE,      # minimize RMSE
-  device   = "auto",
-  random_state = 1,
-  verbose  = FALSE
+bo <- tryCatch(
+  if (run_live) {
+    tab_pfn_bayesian_optimization(
+      fun      = objective,
+      bounds   = list(k = c(1, 15), power = c(0, 3)),
+      n_init   = 6,
+      n_iter   = 14,
+      maximize = FALSE,      # minimize RMSE
+      device   = "auto",
+      random_state = 1,
+      verbose  = FALSE
+    )
+  } else {
+    NULL
+  },
+  error = function(e) NULL
 )
 
-list(
+used_live <- !is.null(bo)
+if (!used_live) bo <- bo_trace
+
+data.frame(
+  source   = if (used_live) "live TabPFN run" else "precomputed trace",
   k        = round(bo$best_x[["k"]]),
   power    = round(bo$best_x[["power"]], 2),
   cv_rmse  = round(bo$best_y, 4)
@@ -163,21 +199,30 @@ and let BO continue from there. Here we resume the first run and add 10 more
 iterations:
 
 ```{r warm-start}
-bo2 <- tab_pfn_bayesian_optimization(
-  fun      = objective,
-  bounds   = list(k = c(1, 15), power = c(0, 3)),
-  init_X   = bo$X,
-  init_y   = bo$y,
-  n_iter   = 10,
-  maximize = FALSE,
-  device   = "auto",
-  random_state = 2,
-  verbose  = FALSE
+bo2 <- tryCatch(
+  if (run_live) {
+    tab_pfn_bayesian_optimization(
+      fun      = objective,
+      bounds   = list(k = c(1, 15), power = c(0, 3)),
+      init_X   = bo$X,
+      init_y   = bo$y,
+      n_iter   = 10,
+      maximize = FALSE,
+      device   = "auto",
+      random_state = 2,
+      verbose  = FALSE
+    )
+  } else {
+    NULL
+  },
+  error = function(e) NULL
 )
+
+best_warm <- if (is.null(bo2)) bo_trace$bo2_best_y else bo2$best_y
 
 data.frame(
   run        = c("first run (20 evals)", "warm start (+10 evals)"),
-  best_rmse  = round(c(bo$best_y, bo2$best_y), 4)
+  best_rmse  = round(c(bo$best_y, best_warm), 4)
 )
 ```
 
@@ -196,3 +241,6 @@ below the first run's best value.
   use `device = "auto"` to pick up a GPU when one is available.
 - To drive the loop yourself — batch candidates, asynchronous workers, custom
   stopping rules — use `tab_pfn_bo_suggest()`.
+- When the Bayesian optimization extension is not configured, the figures above
+  reuse a precomputed optimization trace (`inst/extdata/bo_tuning_trace.rds`)
+  instead of running the surrogate live.
