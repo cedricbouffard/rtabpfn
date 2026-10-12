@@ -52,6 +52,13 @@ reference:
     contents:
     - anomaly
     - anomaly_scores
+
+  - title: Bayesian Optimization
+    desc: TabPFN surrogate models for black-box optimization (PFNs4BO)
+    contents:
+    - tab_pfn_bayesian_optimization
+    - tab_pfn_bo_suggest
+    - check_bayesian_optimization_available
  
   - title: Time Series Forecasting
     desc: Functions for time series forecasting
@@ -74,6 +81,8 @@ reference:
     contents:
     - setup_tabpfn
     - check_tabpfn
+    - check_tabpfn_client
+    - check_tabpfn_license
     - check_gpu_available
     - check_torch_gpu
     - setup_torch
