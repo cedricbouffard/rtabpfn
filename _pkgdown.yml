@@ -135,6 +135,7 @@ articles:
     contents:
     - shap
     - anomaly-detection
+    - bayesian-optimization-tuning
  
 news:
   one_page: false
